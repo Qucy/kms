@@ -165,7 +165,6 @@ function ImageDialog(props) {
       size: Math.round(size/1024, 2) + ' KB',
       creator: 'Jason',
     }
-    console.log()
     // append element to image list
     const newImageList = [...imageList, imageObj]
     setImageList(newImageList)

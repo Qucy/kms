@@ -20,7 +20,7 @@ function createData(id, name, category, linkedImages, createdBy) {
   return { id, name, category, linkedImages, createdBy };
 }
 
-export default function Orders() {
+export default function Tags() {
   // add state to control dialog status
   const [openDialog, setOpenDialog] = React.useState(false);
   // add tag list to status
