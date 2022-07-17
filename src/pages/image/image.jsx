@@ -13,15 +13,40 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
-import KMSImageList from '../../components/tagdropdown'
+import KMSImageList from '../../components/tagdropdown';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 // function component for image list
 export default function TitlebarImageList() {
+  const url = 'http://127.0.0.1:8000/api/';
 
   const [open, setOpen] = React.useState(false);
   const [detail, setDetail] = React.useState(false);
-  const [imageList, setImageList] = React.useState(itemData);
-  const [previewImageList, setPreviewImageList] = React.useState(itemData);
+  const [imageList, setImageList] = React.useState(defaultData);
+  const [previewImageList, setPreviewImageList] = React.useState(defaultData);
+
+
+  useEffect(() => {
+    getAllImage();
+  }, []);
+
+  
+  const getAllImage = () => {
+    axios.get(`${url}image/`).then((response) => 
+    {
+      const allImage = response.data.results;
+      
+      // Adding tag label as hard code. Pending on Tag functions
+      // TODO: Link the image tag with database data
+      allImage.forEach(element => {
+        element.tag = "Food";
+      });
+      
+      setPreviewImageList(allImage);
+      setImageList(allImage);
+    }).catch(error => console.error(`Error : ${error}`))
+  }
 
   // function open image dialog
   const handleClickOpen = (item) => {
@@ -70,21 +95,21 @@ export default function TitlebarImageList() {
       />
     </Stack>
     <Stack>
-      <ImageList sx={{height:500}} cols={4}>
+      <ImageList sx={{height:500}} cols={5}>
         {/* Loop all the images */}
         {previewImageList.map((item) => (
           <ImageListItem key={item.id}>
             <img
-              src={`${item.img}`}
-              alt={item.title}
+              src={`data:image/jpeg;base64,${item.img}`}
+              alt={item.image_name}
               loading="lazy" />
             <ImageListItemBar
-              title={item.title}
+              title={item.image_name}
               subtitle={item.tag}
               actionIcon={
                 <IconButton onClick={() => {return handleClickOpen(item)}} 
                   sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                  aria-label={`info about ${item.title}`} >
+                  aria-label={`info about ${item.image_name}`} >
                   <InfoIcon />
                 </IconButton>}
             />
@@ -105,7 +130,7 @@ function ImageDialog(props) {
   // retrieve value from props
   const {open, detail, handleClose, imageList, setImageList, setPreviewImageList} = props
   // set image dialog title according to title has value or not
-  const title = detail.title === undefined ? "Upload" : "Edit";
+  const title = detail.image_name === undefined ? "Upload" : "Edit";
   // create 2 states and 2 update functions to store and preview selected images
   const [selectedImages, setSelectedImages] = React.useState()
   const [preview, setPreview] = React.useState()
@@ -227,8 +252,8 @@ function ImageDialog(props) {
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           <img
-            src={`${detail.img}`}
-            alt={detail.title}
+            src={`data:image/jpeg;base64,${detail.img}`}
+            alt={detail.image_name}
             width='550'
             height='550'
             loading="lazy" />
@@ -240,7 +265,7 @@ function ImageDialog(props) {
               fullWidth
               variant="standard"
               disabled
-              defaultValue={detail.title}
+              defaultValue={detail.image_name}
             />
           <KMSImageList oldTags={detail.tag} selectedTags={selectedTags} setSelectedTags={setSelectedTags}/>
           <TextField
@@ -251,7 +276,7 @@ function ImageDialog(props) {
             fullWidth
             variant="standard"
             disabled
-            defaultValue={detail.height}
+            defaultValue={detail.image_height}
           />
           <TextField
             autoFocus
@@ -261,7 +286,7 @@ function ImageDialog(props) {
             fullWidth
             variant="standard"
             disabled
-            defaultValue={detail.width}
+            defaultValue={detail.image_width}
           />
           <TextField
             autoFocus
@@ -271,7 +296,7 @@ function ImageDialog(props) {
             fullWidth
             variant="standard"
             disabled
-            defaultValue={detail.size}
+            defaultValue={detail.image_size}
           />
           <TextField
             autoFocus
@@ -281,7 +306,7 @@ function ImageDialog(props) {
             fullWidth
             variant="standard"
             disabled
-            defaultValue={detail.creator} 
+            defaultValue={detail.create_by} 
           />
         </DialogContent>
         <DialogActions>
@@ -292,6 +317,20 @@ function ImageDialog(props) {
     );
   }
 }
+
+const defaultData = [
+  {
+    id : 1,
+    img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=164&h=164&fit=crop&auto=format&dpr=2',
+    title: 'Breakfast',
+    tag: '#Food',
+    height: 100,
+    width: 100,
+    size: '300 KB',
+    creator: 'Jason',
+  }
+]
+
 
 const itemData = [
   {
