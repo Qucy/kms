@@ -17,9 +17,11 @@ import KMSImageList from '../../components/tagdropdown';
 import axios from 'axios';
 import { useEffect } from 'react';
 
+const url = 'http://127.0.0.1:8000/api/';
+
 // function component for image list
 export default function TitlebarImageList() {
-  const url = 'http://127.0.0.1:8000/api/';
+  
 
   const [open, setOpen] = React.useState(false);
   const [detail, setDetail] = React.useState(false);
@@ -36,7 +38,7 @@ export default function TitlebarImageList() {
     axios.get(`${url}image/`).then((response) => 
     {
       const allImage = response.data.results;
-      
+
       // Adding tag label as hard code. Pending on Tag functions
       // TODO: Link the image tag with database data
       allImage.forEach(element => {
@@ -181,19 +183,24 @@ function ImageDialog(props) {
     const {name, size} = selectedImages
     const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join()
     const imageObj =   {
-      id : size,
-      img: preview,
-      title: name.split(".")[0],
-      tag: tags,
-      height: 0,
-      width: 0,
-      size: Math.round(size/1024, 2) + ' KB',
-      creator: 'Jason',
+      file: selectedImages,
+      image_name: name.split(".")[0],
+      // TODO: Change the hard code creator to input from UI
+      create_by: 'Jason',
     }
-    // append element to image list
-    const newImageList = [...imageList, imageObj]
-    setImageList(newImageList)
-    setPreviewImageList(newImageList)
+    const config = {
+      headers: { 'content-type': 'multipart/form-data' }
+    }
+
+    axios.post(`${url}image/`, imageObj, config).then(
+      response => console.log(response)
+    ).catch(error => console.error(`Error : ${error}`))
+
+    // append element to image list (Commented since connected to DB)
+    // const newImageList = [...imageList, imageObj]
+    // setImageList(newImageList)
+    // setPreviewImageList(newImageList)
+    
     // clean upload component
     setSelectedImages(undefined)
     // close dialog
@@ -443,16 +450,7 @@ const itemData = [
     size: '300 KB',
     creator: 'Jason',
   },
-  {
-    id : 12,
-    img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Bike',
-    tag: '#Sports',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
+
 ];
 
 
