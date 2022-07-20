@@ -1,21 +1,35 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Pagination from '@mui/material/Pagination';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+
+import {
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Pagination,
+  Button,
+  Stack,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+} from '@mui/material';
+
+import { LoadingButton } from '@mui/lab';
+import {
+  ConnectingAirportsOutlined,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+} from '@mui/icons-material';
+
 import Title from '../main/title';
 import TagDialog from './TagDialog';
-
-import { API_TAG } from '../../helpers/api';
+import { API_TAG } from '../../utils/api';
 
 // Generate Order Data
 function createData(id, name, category, linkedImages, createdBy) {
@@ -23,26 +37,92 @@ function createData(id, name, category, linkedImages, createdBy) {
 }
 
 export default function Tags() {
+  //TODOs
+  //Clean up state with useReducer
+
   // add state to control dialog status
   const [openDialog, setOpenDialog] = React.useState(false);
   // add tag list to status
-  const [tagList, setTagList] = React.useState(rows);
+  const [tagList, setTagList] = React.useState([]);
   // add tag to status (for update)
-  const [tagObject, setTagObject] = React.useState(false);
+  const [tagObject, setTagObject] = React.useState({});
 
-  const [allTags, setAllTags] = React.useState({});
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+
+  const [status, setStatus] = React.useState('');
+  const [tagListStatus, setTagListStatus] = React.useState('LOADING');
 
   React.useState(() => {
     const fetchData = async () => {
-      const data = await API_TAG.fetchAll();
-      console.log(data.data);
-      setTagList(data.data.results);
+      try {
+        const response = await API_TAG.fetchAllTags();
+
+        if (response.status === 200) {
+          setTagList(response.data.results);
+        }
+
+        //other status code handling
+        //error handling
+      } catch (error) {
+        console.error(error);
+        //error handling
+      }
     };
 
     fetchData();
   }, []);
 
-  React.useState(() => console.log(allTags), [allTags]);
+  React.useEffect(() => {
+    tagList.length > 0 && setTagListStatus('SUCCESS');
+  }, [tagList]);
+
+  const onDeleteTag = (e, t) => {
+    setIsDeleteDialogOpen(true);
+    setTagObject(t);
+  };
+
+  const onSaveDelete = (e, t) => {
+    setStatus('LOADING');
+
+    const deleteTag = async (id) => {
+      try {
+        const response = await API_TAG.deleteTag(id);
+
+        if (response.status === 200) {
+          setStatus('SUCCESS');
+          setTimeout(onDeleteDialogClose, 1000);
+          setTagListStatus('LOADING');
+          setTimeout(
+            () =>
+              setTagList((prevState) =>
+                [...prevState].filter((t) => (t.id !== tagObject.id ? t : false))
+              ),
+            2000
+          );
+        }
+
+        //other status code handling
+        //error handling
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    deleteTag(t.id);
+  };
+
+  const onDeleteDialogClose = () => {
+    setTagObject({});
+    setIsDeleteDialogOpen(false);
+  };
+
+  const onEditTag = React.useCallback(
+    (t) => (e) => {
+      setTagObject(t);
+      setOpenDialog(true);
+    },
+    []
+  );
 
   // open dialog
   const newTag = () => {
@@ -53,20 +133,14 @@ export default function Tags() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-  // delete function
-  const deleteTag = (e, tag) => {
-    // remove select tag by id
-    const newTagList = tagList.filter((t) => {
-      return t.id !== tag.id ? t : false;
-    });
-    // update status
-    setTagList(newTagList);
-  };
-  // edit function
-  const editTag = (e, tag) => {
-    setTagObject(tag);
-    setOpenDialog(true);
-  };
+
+  if (tagListStatus === 'LOADING') {
+    return (
+      <React.Fragment>
+        <CircularProgress />
+      </React.Fragment>
+    );
+  }
 
   return (
     <React.Fragment>
@@ -94,28 +168,20 @@ export default function Tags() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {tagList.map((tag) => (
-            <TableRow key={tag.id}>
+          {tagList.map((tag, index) => (
+            <TableRow key={index}>
               <TableCell>#{tag.tag_name}</TableCell>
               <TableCell>{tag.tag_category}</TableCell>
               <TableCell align='right'>{tag.linkedImages}</TableCell>
               <TableCell>{tag.create_by}</TableCell>
               <TableCell>
                 <Tooltip title='Delete'>
-                  <IconButton
-                    onClick={(e) => {
-                      return deleteTag(e, tag);
-                    }}
-                  >
+                  <IconButton onClick={(e) => onDeleteTag(e, tag)}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Delete'>
-                  <IconButton
-                    onClick={(e) => {
-                      return editTag(e, tag);
-                    }}
-                  >
+                <Tooltip title='Edit'>
+                  <IconButton onClick={onEditTag}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
@@ -123,6 +189,29 @@ export default function Tags() {
             </TableRow>
           ))}
         </TableBody>
+        <Dialog
+          open={isDeleteDialogOpen}
+          onClose={onDeleteDialogClose}
+          aria-labelledby='alert-dialog-title'
+          aria-describedby='alert-dialog-description'
+        >
+          <DialogTitle id='alert-dialog-title'>{'Confirm Deletion of Tag'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id='alert-dialog-description'>
+              Deletion of tag cannot be redo. Click "Confirm" to proceed.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onDeleteDialogClose}>Close</Button>
+            {/* <Button onClick={(e) => onSaveDelete(e, tagObject)}>Confirm</Button> */}
+            <LoadingButton
+              loading={status === 'LOADING'}
+              onClick={(e) => onSaveDelete(e, tagObject)}
+            >
+              Confirm
+            </LoadingButton>
+          </DialogActions>
+        </Dialog>
         <Stack direction='row' spacing={2}>
           <Button variant='contained' onClick={newTag}>
             NEW
@@ -142,7 +231,7 @@ export default function Tags() {
   );
 }
 
-const rows = [
+const [] = [
   createData(0, 'CustomerExperience', 'CLCM', 22, 'Qucy'),
   createData(1, 'CustomerRelationship', 'CLCM', 13, 'Aelx'),
   createData(2, 'CITIBank', 'Competitor', 5, 'Fung'),
