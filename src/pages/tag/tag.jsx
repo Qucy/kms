@@ -136,6 +136,7 @@ export default function Tags() {
   };
   // close dialog
   const handleCloseDialog = () => {
+    setTagObject({});
     setOpenDialog(false);
   };
 
