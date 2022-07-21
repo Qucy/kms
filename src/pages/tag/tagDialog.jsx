@@ -10,45 +10,54 @@ import { LoadingButton } from '@mui/lab';
 
 // Dialog to add/update tags
 export default function TagDialog(props) {
-  // retrieve close dialog function
-  const { openDialog, handleCloseDialog, pageNumber, setTagList, setTagListStatus } =
-    props;
-  // retrieve tag object from tag list page
-  const { tagObject, setTagObject } = props;
+  const {
+    isTagDialogOpen,
+    onTagDialogClose,
+    pageNumber,
+    refetchTagList,
+    tagObject,
+    setTagObject,
+  } = props;
 
   //TODOs
   //overlapping status state, refactor after state management library is confirmed
-  const [tagObjectStatus, setTagObjectStatus] = React.useState('');
+  const [buttonStatus, setButtonStatus] = React.useState('');
 
   const onSave = () => {
+    setButtonStatus('LOADING');
+
+    const updateTag = async (id, t, callback) => {
+      const responseUpdateTag = await API_TAG.updateTag(id, t);
+
+      if (responseUpdateTag.status === 200) {
+        setButtonStatus('SUCCESS');
+        setTimeout(onTagDialogClose, 1000);
+        callback && setTimeout(callback, 1000);
+      }
+    };
+
+    const createTag = async (t, callback) => {
+      const tagWithCreatedTime = { ...t, creation_datetime: new Date() };
+
+      const resCreateTag = await API_TAG.createTag(tagWithCreatedTime);
+
+      if (resCreateTag.status === 201) {
+        setButtonStatus('SUCCESS');
+        setTimeout(onTagDialogClose, 1000);
+        callback && setTimeout(callback, 1000);
+      }
+    };
+
     //decide if the it's a update/create API call
-    setTagObjectStatus('LOADING');
     if (tagObject.id) {
-      const updateTag = async (id, t) => {
-        const responseUpdateTag = await API_TAG.updateTag(id, t);
-
-        if (responseUpdateTag.status === 200) {
-          setTagObjectStatus('SUCCESS');
-          setTimeout(handleCloseDialog, 1000);
-        }
-
-        setTagListStatus('LOADING');
-
-        const responseTagList = await API_TAG.fetchTags(pageNumber);
-
-        if (responseTagList.status === 200) {
-          setTagList(responseTagList.data.results);
-          setTagListStatus('SUCCESS');
-        }
-      };
-
-      updateTag(tagObject.id, tagObject);
+      updateTag(tagObject.id, tagObject, () => refetchTagList(pageNumber));
     } else {
+      createTag(tagObject, () => refetchTagList(pageNumber));
     }
   };
 
   return (
-    <Dialog open={openDialog} onClose={handleCloseDialog}>
+    <Dialog open={isTagDialogOpen} onClose={onTagDialogClose}>
       <DialogTitle>NEW</DialogTitle>
       <DialogContent>
         <TextField
@@ -79,9 +88,13 @@ export default function TagDialog(props) {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDialog}>Cancel</Button>
-        <LoadingButton loading={tagObjectStatus === 'LOADING'} onClick={onSave}>
-          Save
+        <Button onClick={onTagDialogClose}>Cancel</Button>
+        <LoadingButton
+          variant='text'
+          loading={buttonStatus === 'LOADING'}
+          onClick={onSave}
+        >
+          {buttonStatus === 'SUCCESS' ? 'Success!' : 'Save'}
         </LoadingButton>
       </DialogActions>
     </Dialog>
