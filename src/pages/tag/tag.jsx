@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 import {
   Typography,
   Table,
@@ -21,20 +20,11 @@ import {
 } from '@mui/material';
 
 import { LoadingButton } from '@mui/lab';
-import {
-  ConnectingAirportsOutlined,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 
 import Title from '../main/title';
-import TagDialog from './TagDialog';
+import TagDialog from './tagDialog';
 import { API_TAG } from '../../utils/api';
-
-// Generate Order Data
-function createData(id, name, category, linkedImages, createdBy) {
-  return { id, name, category, linkedImages, createdBy };
-}
 
 export default function Tags() {
   //TODOs
@@ -44,6 +34,11 @@ export default function Tags() {
   const [openDialog, setOpenDialog] = React.useState(false);
   // add tag list to status
   const [tagList, setTagList] = React.useState([]);
+
+  // TODOs
+  // Prefetch the pageCount
+  const [pageCount, setPageCount] = React.useState(1);
+  const [pageNumber, setPageNumber] = React.useState(1);
   // add tag to status (for update)
   const [tagObject, setTagObject] = React.useState({});
 
@@ -55,10 +50,11 @@ export default function Tags() {
   React.useState(() => {
     const fetchData = async () => {
       try {
-        const response = await API_TAG.fetchAllTags();
+        const response = await API_TAG.fetchTags();
 
         if (response.status === 200) {
           setTagList(response.data.results);
+          setPageCount(response.data.count);
         }
 
         //other status code handling
@@ -71,10 +67,6 @@ export default function Tags() {
 
     fetchData();
   }, []);
-
-  React.useEffect(() => {
-    tagList.length > 0 && setTagListStatus('SUCCESS');
-  }, [tagList]);
 
   const onDeleteTag = (e, t) => {
     setIsDeleteDialogOpen(true);
@@ -92,13 +84,7 @@ export default function Tags() {
           setStatus('SUCCESS');
           setTimeout(onDeleteDialogClose, 1000);
           setTagListStatus('LOADING');
-          setTimeout(
-            () =>
-              setTagList((prevState) =>
-                [...prevState].filter((t) => (t.id !== tagObject.id ? t : false))
-              ),
-            2000
-          );
+          setTimeout(() => setPageNumber(1), 2000);
         }
 
         //other status code handling
@@ -123,6 +109,24 @@ export default function Tags() {
     },
     []
   );
+
+  const onPaginate = (e, v) => setPageNumber(v ? v : 1);
+
+  React.useEffect(() => {
+    setTagListStatus('LOADING');
+    const fetchTags = async (pageNumber) => {
+      try {
+        const response = await API_TAG.fetchTags(pageNumber);
+        if (response.status === 200) {
+          setTagList(response.data.results);
+          setTagListStatus('SUCCESS');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchTags(pageNumber);
+  }, [pageNumber]);
 
   // open dialog
   const newTag = () => {
@@ -212,37 +216,28 @@ export default function Tags() {
             </LoadingButton>
           </DialogActions>
         </Dialog>
-        <Stack direction='row' spacing={2}>
-          <Button variant='contained' onClick={newTag}>
-            NEW
-          </Button>
-          <Pagination count={10} showFirstButton showLastButton />
-          <TagDialog
-            handleCloseDialog={handleCloseDialog}
-            openDialog={openDialog}
-            tagList={tagList}
-            setTagList={setTagList}
-            tagObject={tagObject}
-            setTagObject={setTagObject}
-          />
-        </Stack>
       </Table>
+      <div style={{ padding: '0.5rem 0rem' }} />
+      <Stack direction='row' spacing={2}>
+        <Button variant='contained' onClick={newTag}>
+          NEW
+        </Button>
+        <Pagination
+          onChange={onPaginate}
+          count={Math.ceil(pageCount / 10)}
+          page={pageNumber}
+          showFirstButton
+          showLastButton
+        />
+        <TagDialog
+          handleCloseDialog={handleCloseDialog}
+          openDialog={openDialog}
+          tagList={tagList}
+          setTagList={setTagList}
+          tagObject={tagObject}
+          setTagObject={setTagObject}
+        />
+      </Stack>
     </React.Fragment>
   );
 }
-
-const [] = [
-  createData(0, 'CustomerExperience', 'CLCM', 22, 'Qucy'),
-  createData(1, 'CustomerRelationship', 'CLCM', 13, 'Aelx'),
-  createData(2, 'CITIBank', 'Competitor', 5, 'Fung'),
-  createData(3, 'RewardPlus', 'APP', 12, 'Martin'),
-  createData(4, 'PaymentFraud1', 'Fraud1', 22, 'John'),
-  createData(5, 'PaymentFraud2', 'Fraud2', 22, 'John'),
-  createData(6, 'PaymentFraud3', 'Fraud3', 22, 'John'),
-  createData(7, 'PaymentFraud4', 'Fraud4', 22, 'John'),
-  createData(8, 'PaymentFraud5', 'Fraud5', 22, 'John'),
-  createData(9, 'PaymentFraud6', 'Fraud6', 22, 'John'),
-  createData(10, 'PaymentFraud7', 'Fraud7', 22, 'John'),
-  createData(11, 'PaymentFraud8', 'Fraud8', 22, 'John'),
-  createData(12, 'PaymentFraud9', 'Fraud9', 22, 'John'),
-];
