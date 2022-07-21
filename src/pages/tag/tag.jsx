@@ -83,7 +83,6 @@ export default function Tags() {
         if (response.status === 200) {
           setStatus('SUCCESS');
           setTimeout(onDeleteDialogClose, 1000);
-          setTagListStatus('LOADING');
           setTimeout(() => setPageNumber(1), 2000);
         }
 
@@ -102,18 +101,19 @@ export default function Tags() {
     setIsDeleteDialogOpen(false);
   };
 
-  const onEditTag = React.useCallback(
-    (t) => (e) => {
-      setTagObject(t);
-      setOpenDialog(true);
-    },
-    []
-  );
+  const onEditTag = (e, t) => {
+    setTagObject(t);
+    setOpenDialog(true);
+  };
+
+  React.useEffect(() => console.log(tagObject), [tagObject]);
 
   const onPaginate = (e, v) => setPageNumber(v ? v : 1);
 
   React.useEffect(() => {
+    console.log(pageNumber);
     setTagListStatus('LOADING');
+
     const fetchTags = async (pageNumber) => {
       try {
         const response = await API_TAG.fetchTags(pageNumber);
@@ -125,6 +125,7 @@ export default function Tags() {
         console.error(error);
       }
     };
+
     fetchTags(pageNumber);
   }, [pageNumber]);
 
@@ -185,7 +186,7 @@ export default function Tags() {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title='Edit'>
-                  <IconButton onClick={onEditTag}>
+                  <IconButton onClick={(e) => onEditTag(e, tag)}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
@@ -232,10 +233,11 @@ export default function Tags() {
         <TagDialog
           handleCloseDialog={handleCloseDialog}
           openDialog={openDialog}
-          tagList={tagList}
-          setTagList={setTagList}
           tagObject={tagObject}
           setTagObject={setTagObject}
+          pageNumber={pageNumber}
+          setTagList={setTagList}
+          setTagListStatus={setTagListStatus}
         />
       </Stack>
     </React.Fragment>

@@ -5,50 +5,46 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import { API_TAG } from '../../utils/api';
+import { LoadingButton } from '@mui/lab';
 
 // Dialog to add/update tags
 export default function TagDialog(props) {
   // retrieve close dialog function
-  const { openDialog, handleCloseDialog } = props;
-  // retrieve tagList from tag list page
-  const { tagList, setTagList } = props;
+  const { openDialog, handleCloseDialog, pageNumber, setTagList, setTagListStatus } =
+    props;
   // retrieve tag object from tag list page
-  const { tagObject } = props;
-  // define tag name and set function
-  const [tagName, setTagName] = React.useState('');
-  // define tag category and set function
-  const [tagCategory, setTagCategory] = React.useState('');
+  const { tagObject, setTagObject } = props;
 
-  // save function
-  const handleSave = () => {
-    // find out it's an edit function or create new function
-    if (tagObject !== '') {
-      const newTagList = tagList.map((t) => {
-        if (t.id === tagObject.id && tagName !== '' && tagCategory !== '') {
-          t.name = tagName;
-          t.category = tagCategory;
+  //TODOs
+  //overlapping status state, refactor after state management library is confirmed
+  const [tagObjectStatus, setTagObjectStatus] = React.useState('');
+
+  const onSave = () => {
+    //decide if the it's a update/create API call
+    setTagObjectStatus('LOADING');
+    if (tagObject.id) {
+      const updateTag = async (id, t) => {
+        const responseUpdateTag = await API_TAG.updateTag(id, t);
+
+        if (responseUpdateTag.status === 200) {
+          setTagObjectStatus('SUCCESS');
+          setTimeout(handleCloseDialog, 1000);
         }
-        return t;
-      });
-      // set to tagList
-      setTagList(newTagList);
+
+        setTagListStatus('LOADING');
+
+        const responseTagList = await API_TAG.fetchTags(pageNumber);
+
+        if (responseTagList.status === 200) {
+          setTagList(responseTagList.data.results);
+          setTagListStatus('SUCCESS');
+        }
+      };
+
+      updateTag(tagObject.id, tagObject);
     } else {
-      // only save if both text input have value
-      if (tagName !== '' && tagCategory !== '') {
-        // construct tag object
-        const tagObject = {
-          id: 99,
-          name: tagName,
-          category: tagCategory,
-          linkedImages: 0,
-          createdBy: 'Qucy',
-        };
-        // set to tagList
-        setTagList([tagObject, ...tagList]);
-      }
     }
-    // close dialog
-    handleCloseDialog();
   };
 
   return (
@@ -63,8 +59,10 @@ export default function TagDialog(props) {
           fullWidth
           variant='standard'
           required
-          onInput={(e) => setTagName(e.target.value)}
-          defaultValue={tagObject.name}
+          onChange={(e) =>
+            setTagObject((prevState) => ({ ...prevState, tag_name: e.target.value }))
+          }
+          defaultValue={tagObject.tag_name}
         />
         <TextField
           autoFocus
@@ -74,15 +72,17 @@ export default function TagDialog(props) {
           fullWidth
           variant='standard'
           required
-          onInput={(e) => setTagCategory(e.target.value)}
-          defaultValue={tagObject.category}
+          onChange={(e) =>
+            setTagObject((prevState) => ({ ...prevState, tag_category: e.target.value }))
+          }
+          defaultValue={tagObject.tag_category}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseDialog}>Cancel</Button>
-        <Button onClick={handleSave} type='submit'>
+        <LoadingButton loading={tagObjectStatus === 'LOADING'} onClick={onSave}>
           Save
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );
