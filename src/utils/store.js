@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import tagDataReducer from '../hooks/tag/tagDataSlice';
+import tagReducer from '../hooks/tag/tagSlice';
 
 export const store = configureStore({
   reducer: {
-    tagData: tagDataReducer,
+    tag: tagReducer,
   },
 });

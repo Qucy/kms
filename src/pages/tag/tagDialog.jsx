@@ -1,6 +1,10 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setTagObject } from '../../hooks/tag/tagDataSlice';
+import {
+  setTagObject,
+  setButtonStatus,
+  tagSliceSelector,
+} from '../../hooks/tag/tagSlice';
 import { LoadingButton } from '@mui/lab';
 import {
   Button,
@@ -16,21 +20,18 @@ import { API_TAG } from '../../utils/api';
 // Dialog to add/update tags
 export default function TagDialog(props) {
   const { isTagDialogOpen, onTagDialogClose, pageNumber, refetchTagList } = props;
-  const tagObject = useSelector((state) => state.tagData.tagObject);
+  const tagObject = useSelector(tagSliceSelector.tagObject);
+  const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
   const dispatch = useDispatch();
 
-  //TODOs
-  //overlapping status state, refactor after state management library is confirmed
-  const [buttonStatus, setButtonStatus] = React.useState('');
-
   const onSave = () => {
-    setButtonStatus('LOADING');
+    dispatch(setButtonStatus('LOADING'));
 
     const updateTag = async (id, t, callback) => {
       const responseUpdateTag = await API_TAG.updateTag(id, t);
 
       if (responseUpdateTag.status === 200) {
-        setButtonStatus('SUCCESS');
+        dispatch(setButtonStatus('SUCCESS'));
         setTimeout(onTagDialogClose, 1000);
         callback && setTimeout(callback, 1000);
       }
@@ -42,7 +43,7 @@ export default function TagDialog(props) {
       const resCreateTag = await API_TAG.createTag(tagWithCreatedTime);
 
       if (resCreateTag.status === 201) {
-        setButtonStatus('SUCCESS');
+        dispatch(setButtonStatus('SUCCESS'));
         setTimeout(onTagDialogClose, 1000);
         callback && setTimeout(callback, 1000);
       }

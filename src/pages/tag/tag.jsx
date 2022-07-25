@@ -3,9 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   setTagList,
   setTagObject,
-  updateTagObjName,
-  updateTagObjCategory,
-} from '../../hooks/tag/tagDataSlice';
+  setTableStatus,
+  setButtonStatus,
+  tagSliceSelector,
+} from '../../hooks/tag/tagSlice';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -32,22 +33,25 @@ import Title from '../main/title';
 import TagDialog from './tagDialog';
 import { API_TAG } from '../../utils/api';
 
-export default function Tags() {
-  const tagList = useSelector((state) => state.tagData.tagList);
-  const tagObject = useSelector((state) => state.tagData.tagObject);
-  const dispatch = useDispatch();
+const NEW_TAG = {
+  tag_name: '',
+  tag_category: '',
+  create_by: '34973152',
+  creation_datetime: '',
+};
 
-  // add state to control dialog status
+export default function Tags() {
+  const tagList = useSelector(tagSliceSelector.tagList);
+  const tagObject = useSelector(tagSliceSelector.tagObject);
+  const tableStatus = useSelector(tagSliceSelector.tableStatus);
+  const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
+
   const [isTagDialogOpen, setIsTagDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-
-  // TODOs
-  // Prefetch the pageCount
   const [pageCount, setPageCount] = React.useState(1);
   const [pageNumber, setPageNumber] = React.useState(1);
 
-  const [buttonStatus, setButtonStatus] = React.useState('');
-  const [tableStatus, setTableStatus] = React.useState('LOADING');
+  const dispatch = useDispatch();
 
   React.useState(() => {
     const fetchData = async () => {
@@ -71,14 +75,14 @@ export default function Tags() {
   }, []);
 
   React.useEffect(() => {
-    setTableStatus('LOADING');
+    dispatch(setTableStatus('LOADING'));
 
     const fetchTags = async (pageNumber) => {
       try {
         const response = await API_TAG.fetchTags(pageNumber);
         if (response.status === 200) {
           dispatch(setTagList(response.data.results));
-          setTableStatus('SUCCESS');
+          dispatch(setTableStatus('SUCCESS'));
         }
       } catch (error) {
         console.error(error);
@@ -92,18 +96,8 @@ export default function Tags() {
 
   const onPaginate = (e, v) => setPageNumber(v ? v : 1);
 
-  //TODOs
-  //Clear all the handler function with dispatch
   const onNewTag = () => {
-    dispatch(
-      setTagObject({
-        tag_name: '',
-        tag_category: '',
-        //refactor to staff if after authorisation implemented
-        create_by: '34973152',
-        creation_datetime: '',
-      })
-    );
+    dispatch(setTagObject(NEW_TAG));
     setIsTagDialogOpen(true);
   };
 
@@ -128,14 +122,14 @@ export default function Tags() {
   };
 
   const onSaveDelete = (e, t) => {
-    setButtonStatus('LOADING');
+    dispatch(setButtonStatus('LOADING'));
 
     const deleteTag = async (id, callback) => {
       try {
         const response = await API_TAG.deleteTag(id);
 
         if (response.status === 200) {
-          setButtonStatus('SUCCESS');
+          dispatch(setButtonStatus('SUCCESS'));
           setTimeout(onDeleteDialogClose, 1000);
           callback && setTimeout(callback, 1000);
         }
@@ -151,12 +145,12 @@ export default function Tags() {
   };
 
   const refetchTagList = React.useCallback(async () => {
-    setTableStatus('LOADING');
+    dispatch(setTableStatus('LOADING'));
     const resTagList = await API_TAG.fetchTags(pageNumber);
 
     if (resTagList.status === 200) {
       dispatch(setTagList(resTagList.data.results));
-      setTableStatus('SUCCESS');
+      dispatch(setTableStatus('SUCCESS'));
     }
   }, [pageNumber]);
 
