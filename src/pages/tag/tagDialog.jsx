@@ -16,13 +16,16 @@ import {
 } from '@mui/material';
 
 import { API_TAG } from '../../utils/api';
+import useTag from '../../hooks/tag/useTag';
 
-// Dialog to add/update tags
 export default function TagDialog(props) {
-  const { isTagDialogOpen, onTagDialogClose, pageNumber, refetchTagList } = props;
   const tagObject = useSelector(tagSliceSelector.tagObject);
   const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
+
   const dispatch = useDispatch();
+
+  const { isTagDialogOpen, onTagDialogClose, pageNumber } = props;
+  const { refetchTagList } = useTag();
 
   const onSave = () => {
     dispatch(setButtonStatus('LOADING'));
