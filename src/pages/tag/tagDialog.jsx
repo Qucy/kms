@@ -1,23 +1,23 @@
 import React from 'react';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { API_TAG } from '../../utils/api';
+import { useSelector, useDispatch } from 'react-redux';
+import { setTagObject } from '../../hooks/tag/tagDataSlice';
 import { LoadingButton } from '@mui/lab';
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
+
+import { API_TAG } from '../../utils/api';
 
 // Dialog to add/update tags
 export default function TagDialog(props) {
-  const {
-    isTagDialogOpen,
-    onTagDialogClose,
-    pageNumber,
-    refetchTagList,
-    tagObject,
-    setTagObject,
-  } = props;
+  const { isTagDialogOpen, onTagDialogClose, pageNumber, refetchTagList } = props;
+  const tagObject = useSelector((state) => state.tagData.tagObject);
+  const dispatch = useDispatch();
 
   //TODOs
   //overlapping status state, refactor after state management library is confirmed
@@ -69,7 +69,7 @@ export default function TagDialog(props) {
           variant='standard'
           required
           onChange={(e) =>
-            setTagObject((prevState) => ({ ...prevState, tag_name: e.target.value }))
+            dispatch(setTagObject({ ...tagObject, tag_name: e.target.value }))
           }
           defaultValue={tagObject.tag_name}
         />
@@ -82,7 +82,7 @@ export default function TagDialog(props) {
           variant='standard'
           required
           onChange={(e) =>
-            setTagObject((prevState) => ({ ...prevState, tag_category: e.target.value }))
+            dispatch(setTagObject({ ...tagObject, tag_category: e.target.value }))
           }
           defaultValue={tagObject.tag_category}
         />

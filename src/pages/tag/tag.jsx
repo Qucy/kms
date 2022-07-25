@@ -1,4 +1,13 @@
 import * as React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setTagList,
+  setTagObject,
+  updateTagObjName,
+  updateTagObjCategory,
+} from '../../hooks/tag/tagDataSlice';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { LoadingButton } from '@mui/lab';
 import {
   Typography,
   Table,
@@ -18,21 +27,15 @@ import {
   DialogActions,
   CircularProgress,
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 
 import Title from '../main/title';
 import TagDialog from './tagDialog';
 import { API_TAG } from '../../utils/api';
 
 export default function Tags() {
-  //TODOs
-  //Clean up state with global state management
-
-  // add tag list to status
-  const [tagList, setTagList] = React.useState([]);
-  // add tag to status (for update)
-  const [tagObject, setTagObject] = React.useState({});
+  const tagList = useSelector((state) => state.tagData.tagList);
+  const tagObject = useSelector((state) => state.tagData.tagObject);
+  const dispatch = useDispatch();
 
   // add state to control dialog status
   const [isTagDialogOpen, setIsTagDialogOpen] = React.useState(false);
@@ -52,7 +55,7 @@ export default function Tags() {
         const response = await API_TAG.fetchTags();
 
         if (response.status === 200) {
-          setTagList(response.data.results);
+          dispatch(setTagList(response.data.results));
           setPageCount(response.data.count);
         }
 
@@ -74,7 +77,7 @@ export default function Tags() {
       try {
         const response = await API_TAG.fetchTags(pageNumber);
         if (response.status === 200) {
-          setTagList(response.data.results);
+          dispatch(setTagList(response.data.results));
           setTableStatus('SUCCESS');
         }
       } catch (error) {
@@ -85,38 +88,42 @@ export default function Tags() {
     fetchTags(pageNumber);
   }, [pageNumber]);
 
+  React.useEffect(() => console.log(tagObject), [tagObject]);
+
   const onPaginate = (e, v) => setPageNumber(v ? v : 1);
 
   //TODOs
   //Clear all the handler function with dispatch
   const onNewTag = () => {
-    setTagObject({
-      tag_name: '',
-      tag_category: '',
-      //refactor to staff if after authorisation implemented
-      create_by: '34973152',
-      creation_datetime: '',
-    });
+    dispatch(
+      setTagObject({
+        tag_name: '',
+        tag_category: '',
+        //refactor to staff if after authorisation implemented
+        create_by: '34973152',
+        creation_datetime: '',
+      })
+    );
     setIsTagDialogOpen(true);
   };
 
   const onEditTag = (e, t) => {
-    setTagObject(t);
+    dispatch(setTagObject(t));
     setIsTagDialogOpen(true);
   };
 
   const onDeleteTag = (e, t) => {
     setIsDeleteDialogOpen(true);
-    setTagObject(t);
+    dispatch(setTagObject(t));
   };
 
   const onTagDialogClose = () => {
-    setTagObject({});
+    dispatch(setTagObject({}));
     setIsTagDialogOpen(false);
   };
 
   const onDeleteDialogClose = () => {
-    setTagObject({});
+    dispatch(setTagObject({}));
     setIsDeleteDialogOpen(false);
   };
 
@@ -148,7 +155,7 @@ export default function Tags() {
     const resTagList = await API_TAG.fetchTags(pageNumber);
 
     if (resTagList.status === 200) {
-      setTagList(resTagList.data.results);
+      dispatch(setTagList(resTagList.data.results));
       setTableStatus('SUCCESS');
     }
   }, [pageNumber]);
@@ -246,8 +253,6 @@ export default function Tags() {
         <TagDialog
           onTagDialogClose={onTagDialogClose}
           isTagDialogOpen={isTagDialogOpen}
-          tagObject={tagObject}
-          setTagObject={setTagObject}
           pageNumber={pageNumber}
           refetchTagList={refetchTagList}
         />
