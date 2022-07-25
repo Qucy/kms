@@ -4,7 +4,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ImageIcon from '@mui/icons-material/Image';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import List from '@mui/material/List';
@@ -13,6 +12,8 @@ import IconButton from '@mui/material/IconButton';
 import MuiDrawer from '@mui/material/Drawer';
 import Toolbar from '@mui/material/Toolbar';
 import {NavLink} from 'react-router-dom'
+
+//import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
 const drawerWidth = 240;
 
@@ -68,12 +69,12 @@ export default function Menu(props) {
             </ListItemIcon>
             <ListItemText primary="Images" />
           </ListItemButton>
-          <ListItemButton component={NavLink} to='/main/document'>
+          { /* <ListItemButton component={NavLink} to='/main/document'>
             <ListItemIcon>
               <LibraryBooksIcon />
             </ListItemIcon>
             <ListItemText primary="Documents" />
-          </ListItemButton>
+           </ListItemButton> */ }
           <ListItemButton component={NavLink} to='/main/tag'>
             <ListItemIcon>
               <NumbersIcon />
