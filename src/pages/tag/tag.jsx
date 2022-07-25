@@ -1,4 +1,8 @@
 import * as React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { LoadingButton } from '@mui/lab';
 import {
   Typography,
   Table,
@@ -18,49 +22,47 @@ import {
   DialogActions,
   CircularProgress,
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 
 import Title from '../main/title';
 import TagDialog from './tagDialog';
 import { API_TAG } from '../../utils/api';
+import useTag from '../../hooks/tag/useTag';
 
 export default function Tags() {
-  //TODOs
-  //Clean up state with global state management
+  const tagList = useSelector(tagSliceSelector.tagList);
+  const tagObject = useSelector(tagSliceSelector.tagObject);
+  const tableStatus = useSelector(tagSliceSelector.tableStatus);
+  const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
 
-  // add tag list to status
-  const [tagList, setTagList] = React.useState([]);
-  // add tag to status (for update)
-  const [tagObject, setTagObject] = React.useState({});
+  const dispatch = useDispatch();
 
-  // add state to control dialog status
-  const [isTagDialogOpen, setIsTagDialogOpen] = React.useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const {
+    isTagDialogOpen,
+    isDeleteDialogOpen,
+    pageCount,
+    setPageCount,
+    pageNumber,
+    onPaginate,
+    onNewTag,
+    onEditTag,
+    onDeleteTag,
+    onTagDialogClose,
+    onDeleteDialogClose,
+    onSaveDelete,
+    refetchTagList,
+  } = useTag();
 
-  // TODOs
-  // Prefetch the pageCount
-  const [pageCount, setPageCount] = React.useState(1);
-  const [pageNumber, setPageNumber] = React.useState(1);
-
-  const [buttonStatus, setButtonStatus] = React.useState('');
-  const [tableStatus, setTableStatus] = React.useState('LOADING');
-
-  React.useState(() => {
+  React.useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await API_TAG.fetchTags();
 
         if (response.status === 200) {
-          setTagList(response.data.results);
+          dispatch(setTagList(response.data.results));
           setPageCount(response.data.count);
         }
-
-        //other status code handling
-        //error handling
       } catch (error) {
         console.error(error);
-        //error handling
       }
     };
 
@@ -68,89 +70,7 @@ export default function Tags() {
   }, []);
 
   React.useEffect(() => {
-    setTableStatus('LOADING');
-
-    const fetchTags = async (pageNumber) => {
-      try {
-        const response = await API_TAG.fetchTags(pageNumber);
-        if (response.status === 200) {
-          setTagList(response.data.results);
-          setTableStatus('SUCCESS');
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchTags(pageNumber);
-  }, [pageNumber]);
-
-  const onPaginate = (e, v) => setPageNumber(v ? v : 1);
-
-  //TODOs
-  //Clear all the handler function with dispatch
-  const onNewTag = () => {
-    setTagObject({
-      tag_name: '',
-      tag_category: '',
-      //refactor to staff if after authorisation implemented
-      create_by: '34973152',
-      creation_datetime: '',
-    });
-    setIsTagDialogOpen(true);
-  };
-
-  const onEditTag = (e, t) => {
-    setTagObject(t);
-    setIsTagDialogOpen(true);
-  };
-
-  const onDeleteTag = (e, t) => {
-    setIsDeleteDialogOpen(true);
-    setTagObject(t);
-  };
-
-  const onTagDialogClose = () => {
-    setTagObject({});
-    setIsTagDialogOpen(false);
-  };
-
-  const onDeleteDialogClose = () => {
-    setTagObject({});
-    setIsDeleteDialogOpen(false);
-  };
-
-  const onSaveDelete = (e, t) => {
-    setButtonStatus('LOADING');
-
-    const deleteTag = async (id, callback) => {
-      try {
-        const response = await API_TAG.deleteTag(id);
-
-        if (response.status === 200) {
-          setButtonStatus('SUCCESS');
-          setTimeout(onDeleteDialogClose, 1000);
-          callback && setTimeout(callback, 1000);
-        }
-
-        //other status code handling
-        //error handling
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    deleteTag(t.id, refetchTagList);
-  };
-
-  const refetchTagList = React.useCallback(async () => {
-    setTableStatus('LOADING');
-    const resTagList = await API_TAG.fetchTags(pageNumber);
-
-    if (resTagList.status === 200) {
-      setTagList(resTagList.data.results);
-      setTableStatus('SUCCESS');
-    }
+    refetchTagList(pageNumber);
   }, [pageNumber]);
 
   if (tableStatus === 'LOADING') {
@@ -246,10 +166,7 @@ export default function Tags() {
         <TagDialog
           onTagDialogClose={onTagDialogClose}
           isTagDialogOpen={isTagDialogOpen}
-          tagObject={tagObject}
-          setTagObject={setTagObject}
           pageNumber={pageNumber}
-          refetchTagList={refetchTagList}
         />
       </Stack>
     </React.Fragment>

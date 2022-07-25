@@ -1,36 +1,40 @@
 import React from 'react';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { API_TAG } from '../../utils/api';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setTagObject,
+  setButtonStatus,
+  tagSliceSelector,
+} from '../../hooks/tag/tagSlice';
 import { LoadingButton } from '@mui/lab';
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 
-// Dialog to add/update tags
+import { API_TAG } from '../../utils/api';
+import useTag from '../../hooks/tag/useTag';
+
 export default function TagDialog(props) {
-  const {
-    isTagDialogOpen,
-    onTagDialogClose,
-    pageNumber,
-    refetchTagList,
-    tagObject,
-    setTagObject,
-  } = props;
+  const tagObject = useSelector(tagSliceSelector.tagObject);
+  const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
 
-  //TODOs
-  //overlapping status state, refactor after state management library is confirmed
-  const [buttonStatus, setButtonStatus] = React.useState('');
+  const dispatch = useDispatch();
+
+  const { isTagDialogOpen, onTagDialogClose, pageNumber } = props;
+  const { refetchTagList } = useTag();
 
   const onSave = () => {
-    setButtonStatus('LOADING');
+    dispatch(setButtonStatus('LOADING'));
 
     const updateTag = async (id, t, callback) => {
       const responseUpdateTag = await API_TAG.updateTag(id, t);
 
       if (responseUpdateTag.status === 200) {
-        setButtonStatus('SUCCESS');
+        dispatch(setButtonStatus('SUCCESS'));
         setTimeout(onTagDialogClose, 1000);
         callback && setTimeout(callback, 1000);
       }
@@ -42,7 +46,7 @@ export default function TagDialog(props) {
       const resCreateTag = await API_TAG.createTag(tagWithCreatedTime);
 
       if (resCreateTag.status === 201) {
-        setButtonStatus('SUCCESS');
+        dispatch(setButtonStatus('SUCCESS'));
         setTimeout(onTagDialogClose, 1000);
         callback && setTimeout(callback, 1000);
       }
@@ -69,7 +73,7 @@ export default function TagDialog(props) {
           variant='standard'
           required
           onChange={(e) =>
-            setTagObject((prevState) => ({ ...prevState, tag_name: e.target.value }))
+            dispatch(setTagObject({ ...tagObject, tag_name: e.target.value }))
           }
           defaultValue={tagObject.tag_name}
         />
@@ -82,7 +86,7 @@ export default function TagDialog(props) {
           variant='standard'
           required
           onChange={(e) =>
-            setTagObject((prevState) => ({ ...prevState, tag_category: e.target.value }))
+            dispatch(setTagObject({ ...tagObject, tag_category: e.target.value }))
           }
           defaultValue={tagObject.tag_category}
         />
