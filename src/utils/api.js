@@ -14,10 +14,17 @@ const fetchRequest = (requestConfig) => {
 };
 
 export const API_TAG = {
-  fetchTags: async (page = '') => {
+  getPaginatedTags: async (page = '') => {
     const config = {
       method: 'get',
       url: page ? `/image-tag/?page=${page}` : '/image-tag/',
+    };
+    return fetchRequest(config);
+  },
+  getAllTags: async () => {
+    const config = {
+      method: 'get',
+      url: `/image-tag/all_tags`,
     };
     return fetchRequest(config);
   },

@@ -73,7 +73,7 @@ const useTag = () => {
       dispatch(setTableStatus('LOADING'));
 
       try {
-        const resTagList = await API_TAG.fetchTags(pageNumber);
+        const resTagList = await API_TAG.getPaginatedTags(pageNumber);
 
         if (resTagList.status === 200) {
           dispatch(setTagList(resTagList.data.results));

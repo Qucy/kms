@@ -55,7 +55,7 @@ export default function Tags() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await API_TAG.fetchTags();
+        const response = await API_TAG.getPaginatedTags();
 
         if (response.status === 200) {
           dispatch(setTagList(response.data.results));
