@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
+import { setAllTagList, setTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -33,14 +33,11 @@ export default function Tags() {
   const tagObject = useSelector(tagSliceSelector.tagObject);
   const tableStatus = useSelector(tagSliceSelector.tableStatus);
   const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
-
   const dispatch = useDispatch();
 
   const {
     isTagDialogOpen,
     isDeleteDialogOpen,
-    pageCount,
-    setPageCount,
     pageNumber,
     onPaginate,
     onNewTag,
@@ -52,21 +49,39 @@ export default function Tags() {
     refetchTagList,
   } = useTag();
 
+  const pageCount = React.useRef(0);
+
   React.useEffect(() => {
-    const fetchData = async () => {
+    //TODO
+    //rewrite fetching mechanism with RTK Query
+
+    const fetchPaginatedTags = async () => {
       try {
         const response = await API_TAG.getPaginatedTags();
 
         if (response.status === 200) {
           dispatch(setTagList(response.data.results));
-          setPageCount(response.data.count);
+          pageCount.current = Number(response.data.count);
         }
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchData();
+    const fetchAllTags = async () => {
+      try {
+        const response = await API_TAG.getAllTags();
+
+        if (response.status === 200) {
+          dispatch(setAllTagList(response.data));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchPaginatedTags();
+    fetchAllTags();
   }, []);
 
   React.useEffect(() => {
@@ -158,7 +173,7 @@ export default function Tags() {
         </Button>
         <Pagination
           onChange={onPaginate}
-          count={Math.ceil(pageCount / 10)}
+          count={Math.ceil(pageCount.current / 10)}
           page={pageNumber}
           showFirstButton
           showLastButton

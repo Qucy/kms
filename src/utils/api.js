@@ -24,7 +24,7 @@ export const API_TAG = {
   getAllTags: async () => {
     const config = {
       method: 'get',
-      url: `/image-tag/all_tags`,
+      url: `/image-tag/all_tags/`,
     };
     return fetchRequest(config);
   },

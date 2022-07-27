@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initalTagState = {
   tagList: [],
+  allTagList: [],
   tagObject: {},
   tableStatus: 'LOADING',
   buttonStatus: '',
@@ -11,6 +12,9 @@ export const tagSlice = createSlice({
   name: 'tag',
   initialState: initalTagState,
   reducers: {
+    setAllTagList: (state, action) => {
+      state.allTagList = action.payload;
+    },
     setTagList: (state, action) => {
       state.tagList = action.payload;
     },
@@ -26,11 +30,17 @@ export const tagSlice = createSlice({
   },
 });
 
-export const { setTagList, setTagObject, setTableStatus, setButtonStatus } =
-  tagSlice.actions;
+export const {
+  setTagList,
+  setAllTagList,
+  setTagObject,
+  setTableStatus,
+  setButtonStatus,
+} = tagSlice.actions;
 
 export const tagSliceSelector = {
   tagList: (state) => state.tag.tagList,
+  allTagList: (state) => state.tag.allTagList,
   tagObject: (state) => state.tag.tagObject,
   tableStatus: (state) => state.tag.tableStatus,
   buttonStatus: (state) => state.tag.buttonStatus,
