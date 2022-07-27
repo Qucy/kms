@@ -13,6 +13,18 @@ const fetchRequest = (requestConfig) => {
   }
 };
 
+// image module api
+export const API_IMAGE = {
+  getAllImages: async () => {
+    const config = {
+      method: 'get',
+      url: `/image/`,
+    };
+    return fetchRequest(config);
+  },
+}
+
+// tag module api
 export const API_TAG = {
   getPaginatedTags: async (page = '') => {
     const config = {

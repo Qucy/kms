@@ -11,46 +11,73 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Autocomplete
+  Autocomplete,
+  CircularProgress
 } from '@mui/material'
 import { styled } from '@mui/material/styles';
 import InfoIcon from '@mui/icons-material/Info';
 import KMSImageList from '../../components/tagdropdown';
 import axios from 'axios';
 import { useEffect } from 'react';
+import { API_TAG, API_IMAGE } from '../../utils/api';
+import { useSelector, useDispatch } from 'react-redux';
+import { setAllTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
+import { setAllImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
 
 const url = 'http://127.0.0.1:8000/api/';
 
 // function component for image list
 export default function TitlebarImageList() {
-  
+  const allTagList = useSelector(tagSliceSelector.allTagList);
+  const allImageList = useSelector(imageSliceSelector.allImageList);
+  const tableStatus = useSelector(imageSliceSelector.tableStatus);
+  const dispatch = useDispatch();
 
   const [open, setOpen] = React.useState(false);
   const [detail, setDetail] = React.useState(false);
   const [imageList, setImageList] = React.useState(defaultData);
   const [previewImageList, setPreviewImageList] = React.useState(defaultData);
 
+  
+
 
   useEffect(() => {
+
+    // function to retrieve all the images
+    const getAllImage  = async () => {
+      try {
+        const response = await API_IMAGE.getAllImages();
+        if (response.status === 200) {
+          const allImage = response.data.results;
+          // Adding tag label as hard code. Pending on Tag functions
+          // TODO: Link the image tag with database data
+          allImage.forEach(e => {
+            e.tag = "Food";
+          });
+          dispatch(setAllImageList(allImage));
+          dispatch(setTableStatus('SUCCESS'));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // function to retrieve all the tags TODO call when login page is load
+    const fetchAllTags = async () => {
+      try {
+        const response = await API_TAG.getAllTags();
+        if (response.status === 200) {
+          dispatch(setAllTagList(response.data));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchAllTags();
     getAllImage();
+
   }, []);
-
-  
-  const getAllImage = () => {
-    axios.get(`${url}image/`).then((response) => 
-    {
-      const allImage = response.data.results;
-
-      // Adding tag label as hard code. Pending on Tag functions
-      // TODO: Link the image tag with database data
-      allImage.forEach(element => {
-        element.tag = "Food";
-      });
-      
-      setPreviewImageList(allImage);
-      setImageList(allImage);
-    }).catch(error => console.error(`Error : ${error}`))
-  }
 
   // function open image dialog
   const handleClickOpen = (item) => {
@@ -78,30 +105,38 @@ export default function TitlebarImageList() {
     }
   }
 
+  if (tableStatus === 'LOADING') {
+    return (
+      <React.Fragment>
+        <CircularProgress />
+      </React.Fragment>
+    );
+  }
+
   return (
     <div>
       {/* Search component */}
-    <Stack spacing={3} sx={{ width: 500 }}>
-      <Autocomplete
-        onChange={search}
-        multiple
-        id="tags-standard"
-        options={hashTags}
-        getOptionLabel={(option) => option}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="standard"
-            label="Search by hash tag"
-            placeholder="Hash tag"
-          />
-        )}
-      />
-    </Stack>
-    <Stack>
-      <ImageList sx={{height:500}} cols={5}>
-        {/* Loop all the images */}
-        {previewImageList.map((item) => (
+      <Stack spacing={3} sx={{ width: 500 }}>
+        <Autocomplete
+          onChange={search}
+          multiple
+          id="tags-standard"
+          options={allTagList.map(t => t.tag_name)}
+          getOptionLabel={(option) => option}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="standard"
+              label="Search by hash tag"
+              placeholder="Hash tag"
+            />
+          )}
+        />
+      </Stack>
+      <Stack>
+        <ImageList sx={{height:500}} cols={5}>
+          {/* Loop all the images */}
+          {allImageList.map((item) => (
           <ImageListItem key={item.id}>
             <img
               src={`data:image/jpeg;base64,${item.img}`}
@@ -197,11 +232,6 @@ function ImageDialog(props) {
     axios.post(`${url}image/`, imageObj, config).then(
       response => console.log(response)
     ).catch(error => console.error(`Error : ${error}`))
-
-    // append element to image list (Commented since connected to DB)
-    // const newImageList = [...imageList, imageObj]
-    // setImageList(newImageList)
-    // setPreviewImageList(newImageList)
     
     // clean upload component
     setSelectedImages(undefined)
@@ -329,138 +359,23 @@ function ImageDialog(props) {
 
 const defaultData = [
   {
-    id : 1,
-    img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Breakfast',
-    tag: '#Food',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
+    id : 0,
+    img: '',
+    title: '',
+    tag: '',
+    height: 0,
+    width: 0,
+    size: '',
+    creator: '',
   }
 ]
 
 
-const itemData = [
-  {
-    id : 1,
-    img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Breakfast',
-    tag: '#Food',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 2,
-    img: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Burger',
-    tag: '#Food',
-    height: 199,
-    width: 288,
-    size: '400 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 3,
-    img: 'https://images.unsplash.com/photo-1522770179533-24471fcdba45?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Camera',
-    tag: '#Electronic',
-    height: 400,
-    width: 500,
-    size: '600 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 4,
-    img: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Coffee',
-    tag: '#Food',
-    height: 200,
-    width: 100,
-    size: '350 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 5,
-    img: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Hats',
-    tag: '#Clothes',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 6,
-    img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Honey',
-    tag: '#Food',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 7,
-    img: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Basketball',
-    tag: '#Sports',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 8,
-    img: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Fern',
-    tag: '#Plants',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 9,
-    img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Mushrooms',
-    tag: '#Plants',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 10,
-    img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Tomato basil',
-    tag: '#Plants',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-  {
-    id : 11,
-    img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1?w=164&h=164&fit=crop&auto=format&dpr=2',
-    title: 'Sea star',
-    tag: '#Sea',
-    height: 100,
-    width: 100,
-    size: '300 KB',
-    creator: 'Jason',
-  },
-
-];
-
-
 const hashTags = [
-'#Food', 
-'#Electronic',
-'#Clothes',
-'#Sports',
-'#Plants',
-'#Sea'
+  '#Food', 
+  '#Electronic',
+  '#Clothes',
+  '#Sports',
+  '#Plants',
+  '#Sea'
 ];

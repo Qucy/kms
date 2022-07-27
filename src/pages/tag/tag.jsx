@@ -109,11 +109,6 @@ export default function Tags() {
               <Typography variant='subtitle1'>Category</Typography>
             </TableCell>
             <TableCell>
-              <Typography variant='subtitle1' align='right'>
-                Linked Images
-              </Typography>
-            </TableCell>
-            <TableCell>
               <Typography variant='subtitle1'>Created By</Typography>
             </TableCell>
             <TableCell>
@@ -126,7 +121,6 @@ export default function Tags() {
             <TableRow key={index}>
               <TableCell>#{tag.tag_name}</TableCell>
               <TableCell>{tag.tag_category}</TableCell>
-              <TableCell align='right'>{tag.linkedImages}</TableCell>
               <TableCell>{tag.create_by}</TableCell>
               <TableCell>
                 <Tooltip title='Delete'>
