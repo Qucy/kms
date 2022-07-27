@@ -11,12 +11,11 @@ const NEW_TAG = {
 };
 
 const useTag = () => {
+  const dispatch = useDispatch();
+
   const [isTagDialogOpen, setIsTagDialogOpen] = React.useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
-  const [pageCount, setPageCount] = React.useState(1);
   const [pageNumber, setPageNumber] = React.useState(1);
-
-  const dispatch = useDispatch();
 
   const toggleTagDialog = () => setIsTagDialogOpen((_prev) => !_prev);
   const toggleDeleteDialog = () => setIsDeleteDialogOpen((_prev) => !_prev);
@@ -89,8 +88,6 @@ const useTag = () => {
   return {
     isTagDialogOpen,
     isDeleteDialogOpen,
-    pageCount,
-    setPageCount,
     pageNumber,
     onPaginate,
     onNewTag,
