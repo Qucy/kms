@@ -1,86 +1,141 @@
 import * as React from 'react';
-import Typography from '@mui/material/Typography'
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Pagination from '@mui/material/Pagination';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import { useSelector, useDispatch } from 'react-redux';
+import { setAllTagList, setTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { LoadingButton } from '@mui/lab';
+import {
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Pagination,
+  Button,
+  Stack,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+} from '@mui/material';
+
 import Title from '../main/title';
 import TagDialog from './tagDialog';
-
-// Generate Order Data
-function createData(id, name, category, linkedImages, createdBy) {
-  return { id, name, category, linkedImages, createdBy };
-}
+import { API_TAG } from '../../utils/api';
+import useTag from '../../hooks/tag/useTag';
 
 export default function Tags() {
-  // add state to control dialog status
-  const [openDialog, setOpenDialog] = React.useState(false);
-  // add tag list to status
-  const [tagList, setTagList] = React.useState(rows);
-  // add tag to status (for update)
-  const [tagObject, setTagObject] = React.useState(false)
+  const tagList = useSelector(tagSliceSelector.tagList);
+  const tagObject = useSelector(tagSliceSelector.tagObject);
+  const tableStatus = useSelector(tagSliceSelector.tableStatus);
+  const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
+  const dispatch = useDispatch();
 
-  // open dialog
-  const newTag = () => {
-    setTagObject('')
-    setOpenDialog(true);
-  };
-  // close dialog
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-  // delete function
-  const deleteTag = (e, tag) => {
-    // remove select tag by id
-    const newTagList = tagList.filter((t) => {
-      return t.id !== tag.id ? t : false
-    })
-    // update status
-    setTagList(newTagList)
-  }
-  // edit function
-  const editTag = (e, tag) => {
-    setTagObject(tag)
-    setOpenDialog(true);
-  }
+  const {
+    isTagDialogOpen,
+    isDeleteDialogOpen,
+    pageNumber,
+    onPaginate,
+    onNewTag,
+    onEditTag,
+    onDeleteTag,
+    onTagDialogClose,
+    onDeleteDialogClose,
+    onSaveDelete,
+    refetchTagList,
+  } = useTag();
 
+  const pageCount = React.useRef(0);
+
+  React.useEffect(() => {
+    //TODO
+    //rewrite fetching mechanism with RTK Query
+
+    const fetchPaginatedTags = async () => {
+      try {
+        const response = await API_TAG.getPaginatedTags();
+
+        if (response.status === 200) {
+          dispatch(setTagList(response.data.results));
+          pageCount.current = Number(response.data.count);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const fetchAllTags = async () => {
+      try {
+        const response = await API_TAG.getAllTags();
+
+        if (response.status === 200) {
+          dispatch(setAllTagList(response.data));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchPaginatedTags();
+    fetchAllTags();
+  }, []);
+
+  React.useEffect(() => {
+    refetchTagList(pageNumber);
+  }, [pageNumber]);
+
+  if (tableStatus === 'LOADING') {
+    return (
+      <React.Fragment>
+        <CircularProgress />
+      </React.Fragment>
+    );
+  }
 
   return (
     <React.Fragment>
       <Title>Tags</Title>
-      <Table size="small" sx={{maxHeight:300}}>
+      <Table size='small' sx={{ maxHeight: 300 }}>
         <TableHead>
           <TableRow>
-            <TableCell><Typography variant='subtitle1'>Tag</Typography></TableCell>
-            <TableCell><Typography variant='subtitle1'>Category</Typography></TableCell>
-            <TableCell><Typography variant='subtitle1' align='right'>Linked Images</Typography></TableCell>
-            <TableCell><Typography variant='subtitle1'>Created By</Typography></TableCell>
-            <TableCell><Typography variant='subtitle1'>Operation</Typography></TableCell>
+            <TableCell>
+              <Typography variant='subtitle1'>Tag</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography variant='subtitle1'>Category</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography variant='subtitle1' align='right'>
+                Linked Images
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography variant='subtitle1'>Created By</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography variant='subtitle1'>Operation</Typography>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {tagList.map((tag) => (
-            <TableRow key={tag.id}>
-              <TableCell>#{tag.name}</TableCell>
-              <TableCell>{tag.category}</TableCell>
+          {tagList.map((tag, index) => (
+            <TableRow key={index}>
+              <TableCell>#{tag.tag_name}</TableCell>
+              <TableCell>{tag.tag_category}</TableCell>
               <TableCell align='right'>{tag.linkedImages}</TableCell>
-              <TableCell>{tag.createdBy}</TableCell>
+              <TableCell>{tag.create_by}</TableCell>
               <TableCell>
-                <Tooltip title="Delete">
-                  <IconButton onClick={(e) => {return deleteTag(e, tag)}}>
+                <Tooltip title='Delete'>
+                  <IconButton onClick={(e) => onDeleteTag(e, tag)}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Delete">
-                  <IconButton onClick={(e) => {return editTag(e, tag)}}>
+                <Tooltip title='Edit'>
+                  <IconButton onClick={(e) => onEditTag(e, tag)}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
@@ -88,111 +143,47 @@ export default function Tags() {
             </TableRow>
           ))}
         </TableBody>
-        <Stack direction="row" spacing={2}>
-          <Button variant="contained" onClick={newTag}>NEW</Button>
-          <Pagination count={10} showFirstButton showLastButton />
-          <TagDialog handleCloseDialog={handleCloseDialog} 
-                     openDialog={openDialog}
-                     tagList={tagList}
-                     setTagList={setTagList}
-                     tagObject={tagObject}
-                     setTagObject={setTagObject}/>
-        </Stack>
+        <Dialog
+          open={isDeleteDialogOpen}
+          onClose={onDeleteDialogClose}
+          aria-labelledby='alert-dialog-title'
+          aria-describedby='alert-dialog-description'
+        >
+          <DialogTitle id='alert-dialog-title'>{'Confirm Deletion of Tag'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id='alert-dialog-description'>
+              Deletion of tag cannot be redo. Click "Confirm" to proceed.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onDeleteDialogClose}>Close</Button>
+            <LoadingButton
+              loading={buttonStatus === 'LOADING'}
+              onClick={(e) => onSaveDelete(e, tagObject)}
+            >
+              {buttonStatus === 'SUCCESS' ? 'Success!' : 'Save'}
+            </LoadingButton>
+          </DialogActions>
+        </Dialog>
       </Table>
+      <div style={{ padding: '0.5rem 0rem' }} />
+      <Stack direction='row' spacing={2}>
+        <Button variant='contained' onClick={onNewTag}>
+          NEW
+        </Button>
+        <Pagination
+          onChange={onPaginate}
+          count={Math.ceil(pageCount.current / 10)}
+          page={pageNumber}
+          showFirstButton
+          showLastButton
+        />
+        <TagDialog
+          onTagDialogClose={onTagDialogClose}
+          isTagDialogOpen={isTagDialogOpen}
+          pageNumber={pageNumber}
+        />
+      </Stack>
     </React.Fragment>
   );
 }
-
-
-const rows = [
-  createData(
-    0,
-    'CustomerExperience',
-    'CLCM',
-    22,
-    'Qucy',
-  ),
-  createData(
-    1,
-    'CustomerRelationship',
-    'CLCM',
-    13,
-    'Aelx',
-  ),
-  createData(
-    2,
-    'CITIBank',
-    'Competitor',
-    5,
-    'Fung',),
-  createData(
-    3,
-    'RewardPlus',
-    'APP',
-    12,
-    'Martin',
-  ),
-  createData(
-    4,
-    'PaymentFraud1',
-    'Fraud1',
-    22,
-    'John',
-  ),
-  createData(
-    5,
-    'PaymentFraud2',
-    'Fraud2',
-    22,
-    'John',
-  ),
-  createData(
-    6,
-    'PaymentFraud3',
-    'Fraud3',
-    22,
-    'John',
-  ),
-  createData(
-    7,
-    'PaymentFraud4',
-    'Fraud4',
-    22,
-    'John',
-  ),
-  createData(
-    8,
-    'PaymentFraud5',
-    'Fraud5',
-    22,
-    'John',
-  ),
-  createData(
-    9,
-    'PaymentFraud6',
-    'Fraud6',
-    22,
-    'John',
-  ),
-  createData(
-    10,
-    'PaymentFraud7',
-    'Fraud7',
-    22,
-    'John',
-  ),
-  createData(
-    11,
-    'PaymentFraud8',
-    'Fraud8',
-    22,
-    'John',
-  ),
-  createData(
-    12,
-    'PaymentFraud9',
-    'Fraud9',
-    22,
-    'John',
-  )
-];

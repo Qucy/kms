@@ -1,82 +1,131 @@
-import React from 'react';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+import * as React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setTagObject,
+  setButtonStatus,
+  tagSliceSelector,
+} from '../../hooks/tag/tagSlice';
+import { LoadingButton } from '@mui/lab';
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 
-// Dialog to add/update tags
+import { API_TAG } from '../../utils/api';
+import useTag from '../../hooks/tag/useTag';
+import useDebounce from '../../hooks/common/useDebounce';
+
 export default function TagDialog(props) {
-  // retrieve close dialog function
-  const {openDialog, handleCloseDialog} = props
-  // retrieve tagList from tag list page
-  const {tagList, setTagList} = props
-  // retrieve tag object from tag list page
-  const {tagObject} = props
-  // define tag name and set function
-  const [tagName, setTagName] = React.useState('')
-  // define tag category and set function
-  const [tagCategory, setTagCategory] = React.useState('')
+  const tagObject = useSelector(tagSliceSelector.tagObject);
+  const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
+  const allTagList = useSelector(tagSliceSelector.allTagList);
 
-  // save function
-  const handleSave = () => {
-      // find out it's an edit function or create new function
-      if (tagObject !== '') {
-          const newTagList = tagList.map((t) => {
-              if (t.id === tagObject.id && tagName !== '' && tagCategory !== '') {
-                  t.name = tagName
-                  t.category = tagCategory
-              }
-              return t
-          })
-          // set to tagList
-          setTagList(newTagList)
+  const dispatch = useDispatch();
+
+  const { isTagDialogOpen, onTagDialogClose, pageNumber } = props;
+  const { refetchTagList } = useTag();
+  const debouncedTagName = useDebounce(tagObject.tag_name, 400);
+
+  const onSave = () => {
+    dispatch(setButtonStatus('LOADING'));
+
+    const updateTag = async (id, t, callback) => {
+      const responseUpdateTag = await API_TAG.updateTag(id, t);
+
+      if (responseUpdateTag.status === 200) {
+        dispatch(setButtonStatus('SUCCESS'));
+        setTimeout(onTagDialogClose, 1000);
+        callback && setTimeout(callback, 1000);
+        setTimeout(dispatch(setButtonStatus('')), 1000);
       }
-      else {
-        // only save if both text input have value
-        if (tagName !== '' && tagCategory !== '') {
-            // construct tag object
-            const tagObject = {id: 99, name: tagName, category:tagCategory, linkedImages:0, createdBy:'Qucy'}
-            // set to tagList
-            setTagList([tagObject, ...tagList])
-        }
+    };
+
+    const createTag = async (t, callback) => {
+      const tagWithCreatedTime = { ...t, creation_datetime: new Date() };
+
+      const resCreateTag = await API_TAG.createTag(tagWithCreatedTime);
+
+      if (resCreateTag.status === 201) {
+        dispatch(setButtonStatus('SUCCESS'));
+        setTimeout(onTagDialogClose, 1000);
+        callback && setTimeout(callback, 1000);
+        setTimeout(dispatch(setButtonStatus('')), 1000);
       }
-      // close dialog
-      handleCloseDialog()
-  }
+    };
+
+    //decide if the it's a update/create API call
+    if (tagObject.id) {
+      updateTag(tagObject.id, tagObject, () => refetchTagList(pageNumber));
+    } else {
+      createTag(tagObject, () => refetchTagList(pageNumber));
+    }
+  };
+
+  React.useEffect(() => {
+    if (tagObject.id) {
+      let _tagList = [...allTagList];
+      const _index = allTagList.findIndex((tag) => tag.id === tagObject.id);
+
+      _tagList.splice(_index, 1);
+      _tagList.filter((tag) => tag.tag_name === debouncedTagName).length >= 1
+        ? dispatch(setButtonStatus('ERROR'))
+        : dispatch(setButtonStatus(''));
+    } else {
+      allTagList.filter((tag) => tag.tag_name === debouncedTagName).length >= 1
+        ? dispatch(setButtonStatus('ERROR'))
+        : dispatch(setButtonStatus(''));
+    }
+    return;
+  }, [debouncedTagName]);
 
   return (
-    <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>NEW</DialogTitle>
-        <DialogContent>
-            <TextField
-            autoFocus
-            margin="dense"
-            id="tag_name"
-            label="tag name"
-            fullWidth
-            variant="standard"
-            required
-            onInput={e => setTagName(e.target.value)}
-            defaultValue={tagObject.name}
-            />
+    <Dialog open={isTagDialogOpen} onClose={onTagDialogClose}>
+      <DialogTitle>NEW</DialogTitle>
+      <DialogContent>
         <TextField
-            autoFocus
-            margin="dense"
-            id="tag_category"
-            label="tag category"
-            fullWidth
-            variant="standard"
-            required
-            onInput={e => setTagCategory(e.target.value)}
-            defaultValue={tagObject.category}
-            />
-        </DialogContent>
-        <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button onClick={handleSave} type='submit'>Save</Button>
-        </DialogActions>
+          error={buttonStatus === 'ERROR'}
+          helperText={buttonStatus === 'ERROR' ? 'Duplicate Hashtag Name' : ''}
+          autoFocus
+          margin='dense'
+          id='tag_name'
+          label='tag name'
+          fullWidth
+          variant='standard'
+          required
+          onChange={(e) =>
+            dispatch(setTagObject({ ...tagObject, tag_name: e.target.value }))
+          }
+          defaultValue={tagObject.tag_name}
+        />
+        <TextField
+          autoFocus
+          margin='dense'
+          id='tag_category'
+          label='tag category'
+          fullWidth
+          variant='standard'
+          required
+          onChange={(e) =>
+            dispatch(setTagObject({ ...tagObject, tag_category: e.target.value }))
+          }
+          defaultValue={tagObject.tag_category}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onTagDialogClose}>Cancel</Button>
+        <LoadingButton
+          disabled={buttonStatus === 'ERROR'}
+          variant='text'
+          loading={buttonStatus === 'LOADING'}
+          onClick={onSave}
+        >
+          {buttonStatus === 'SUCCESS' ? 'Success!' : 'Save'}
+        </LoadingButton>
+      </DialogActions>
     </Dialog>
   );
 }
