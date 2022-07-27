@@ -15,6 +15,13 @@ import {
 } from '@mui/material'
 import { styled } from '@mui/material/styles';
 import InfoIcon from '@mui/icons-material/Info';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Autocomplete from '@mui/material/Autocomplete';
+import { Pagination } from '@mui/material';
 import KMSImageList from '../../components/tagdropdown';
 import axios from 'axios';
 import { useEffect } from 'react';
@@ -26,6 +33,8 @@ export default function TitlebarImageList() {
   
 
   const [open, setOpen] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [pageNumer, setpageNumer] = React.useState(0);
   const [detail, setDetail] = React.useState(false);
   const [imageList, setImageList] = React.useState(defaultData);
   const [previewImageList, setPreviewImageList] = React.useState(defaultData);
@@ -36,8 +45,8 @@ export default function TitlebarImageList() {
   }, []);
 
   
-  const getAllImage = () => {
-    axios.get(`${url}image/`).then((response) => 
+  const getAllImage = (pageNum=1) => {
+    axios.get(`${url}image/${pageNum === 1 ? '' : '?offset='+(pageNum-1)*10}`).then((response) => 
     {
       const allImage = response.data.results;
 
@@ -49,6 +58,7 @@ export default function TitlebarImageList() {
       
       setPreviewImageList(allImage);
       setImageList(allImage);
+      setpageNumer(Math.ceil(response.data.count / 10))
     }).catch(error => console.error(`Error : ${error}`))
   }
 
@@ -62,6 +72,12 @@ export default function TitlebarImageList() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  // function to change the page number
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    getAllImage(value);
+  }
 
   // search function for image list
   const search = (event, value) => {
@@ -99,7 +115,7 @@ export default function TitlebarImageList() {
       />
     </Stack>
     <Stack>
-      <ImageList sx={{height:500}} cols={5}>
+      <ImageList sx={{height:580}} cols={5}>
         {/* Loop all the images */}
         {previewImageList.map((item) => (
           <ImageListItem key={item.id}>
@@ -121,8 +137,12 @@ export default function TitlebarImageList() {
           ))}
         </ImageList>
       </Stack>
+      <Stack direction="row" justifyContent="space-between">
       {/* other function */}
       <Button variant="contained" onClick={handleClickOpen}>UPLOAD</Button>
+      {/* pagnation component */}
+      <Pagination count={pageNumer} page={page} onChange={handlePageChange} />
+      </Stack>
       {/* image dialog component */}
       <ImageDialog open={open} detail={detail} imageList={imageList} setImageList={setImageList} setPreviewImageList={setPreviewImageList} handleClose={handleClose}/>
     </div>
@@ -137,7 +157,7 @@ function ImageDialog(props) {
   const title = detail.image_name === undefined ? "Upload" : "Edit";
   // create 2 states and 2 update functions to store and preview selected images
   const [selectedImages, setSelectedImages] = React.useState()
-  const [preview, setPreview] = React.useState()
+  const [previews, setPreview] = React.useState()
   // create selected tags and update function to retrieve selected tags
   const [selectedTags, setSelectedTags] = React.useState()
   // hide orign upload button for input box
@@ -151,8 +171,13 @@ function ImageDialog(props) {
         setPreview(undefined)
         return
     }
-    const objectUrl = URL.createObjectURL(selectedImages)
-    setPreview(objectUrl)
+    let preview_tmp = []
+    for (let i = 0; i < selectedImages.length; i++){
+      let objectUrl = URL.createObjectURL(selectedImages[i])
+      preview_tmp.push(objectUrl)
+    }
+    console.log(preview_tmp)
+    setPreview(preview_tmp)
     // free memory when ever this component is unmounted
     // return () => URL.revokeObjectURL(objectUrl) TODO
   }, [selectedImages])
@@ -167,7 +192,7 @@ function ImageDialog(props) {
       return
     } else {
       // only put first image into it
-      setSelectedImages(files[0])
+      setSelectedImages(files)
     }
   }
 
@@ -181,28 +206,24 @@ function ImageDialog(props) {
 
   // upload function
   const onSave = () => {
-    // create image object
-    const {name, size} = selectedImages
-    const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join()
-    const imageObj =   {
-      file: selectedImages,
-      image_name: name.split(".")[0],
-      // TODO: Change the hard code creator to input from UI
-      create_by: 'Jason',
-    }
-    const config = {
-      headers: { 'content-type': 'multipart/form-data' }
-    }
+    for (let i = 0; i < selectedImages.length; i++) {
+      // create image object
+      const { name, size } = selectedImages[i]
+      const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join()
+      const imageObj = {
+        file: selectedImages[i],
+        image_name: name.split(".")[0],
+        // TODO: Change the hard code creator to input from UI
+        create_by: 'Jason',
+      }
+      const config = {
+        headers: { 'content-type': 'multipart/form-data' }
+      }
 
-    axios.post(`${url}image/`, imageObj, config).then(
-      response => console.log(response)
-    ).catch(error => console.error(`Error : ${error}`))
-
-    // append element to image list (Commented since connected to DB)
-    // const newImageList = [...imageList, imageObj]
-    // setImageList(newImageList)
-    // setPreviewImageList(newImageList)
-    
+      axios.post(`${url}image/`, imageObj, config).then(
+        response => console.log(response)
+      ).catch(error => console.error(`Error : ${error}`))
+    }
     // clean upload component
     setSelectedImages(undefined)
     // close dialog
@@ -233,19 +254,30 @@ function ImageDialog(props) {
         <DialogContent>
           <label htmlFor="contained-button-file">
             {/* upload component */}
-            <Input accept="image/*" id="contained-button-file" multiple type="file" onChange={onImageSelected}/>
+            <h4>Upload Guide</h4>
+            <p>
+              1. Select the tag for the image(s) you would like to upload.
+            </p>
+            <KMSImageList selectedTags={selectedTags} setSelectedTags={setSelectedTags}/>
+            <p>
+              2. Upload one or more image(s) using the upload button below.
+            </p>
+            <Input accept="image/*" id="contained-button-file" multiple type="file" onChange={onImageSelected} />
             <Button variant="contained" component="span">Upload</Button>
             {/* preview component */}
-            {selectedImages &&  <img src={preview}
-                                      width='550'
-                                      height='550'
-                                      alt='new uploaded'
-                                      loading="lazy" /> }
+            {selectedImages && previews && previews.map((preview) => (
+              <img
+                  src={preview}
+                  width='550'
+                  height='550'
+                alt='new uploaded'
+                style={{ marginTop: '1em', marginBottom: '1em'}}
+                loading="lazy" />
+            ))
+            }
           </label>
-        </DialogContent>
-        {/* multiple tag select component */}
-        <DialogContent>
-          <KMSImageList selectedTags={selectedTags} setSelectedTags={setSelectedTags}/>
+
+          
         </DialogContent>
         {/* buttons */}
         <DialogActions>
@@ -253,8 +285,8 @@ function ImageDialog(props) {
           <Button onClick={onSave}>Save</Button>
         </DialogActions>
       </Dialog>
-    );
-  } else {
+    );} 
+  else {
     // update page
     return (
       <Dialog open={open} onClose={handleClose}>
