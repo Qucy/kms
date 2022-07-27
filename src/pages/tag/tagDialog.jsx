@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setTagObject,
@@ -17,15 +17,18 @@ import {
 
 import { API_TAG } from '../../utils/api';
 import useTag from '../../hooks/tag/useTag';
+import useDebounce from '../../hooks/common/useDebounce';
 
 export default function TagDialog(props) {
   const tagObject = useSelector(tagSliceSelector.tagObject);
   const buttonStatus = useSelector(tagSliceSelector.buttonStatus);
+  const allTagList = useSelector(tagSliceSelector.allTagList);
 
   const dispatch = useDispatch();
 
   const { isTagDialogOpen, onTagDialogClose, pageNumber } = props;
   const { refetchTagList } = useTag();
+  const debouncedTagName = useDebounce(tagObject.tag_name, 400);
 
   const onSave = () => {
     dispatch(setButtonStatus('LOADING'));
@@ -37,6 +40,7 @@ export default function TagDialog(props) {
         dispatch(setButtonStatus('SUCCESS'));
         setTimeout(onTagDialogClose, 1000);
         callback && setTimeout(callback, 1000);
+        setTimeout(dispatch(setButtonStatus('')), 1000);
       }
     };
 
@@ -49,6 +53,7 @@ export default function TagDialog(props) {
         dispatch(setButtonStatus('SUCCESS'));
         setTimeout(onTagDialogClose, 1000);
         callback && setTimeout(callback, 1000);
+        setTimeout(dispatch(setButtonStatus('')), 1000);
       }
     };
 
@@ -60,11 +65,30 @@ export default function TagDialog(props) {
     }
   };
 
+  React.useEffect(() => {
+    if (tagObject.id) {
+      let _tagList = [...allTagList];
+      const _index = allTagList.findIndex((tag) => tag.id === tagObject.id);
+
+      _tagList.splice(_index, 1);
+      _tagList.filter((tag) => tag.tag_name === debouncedTagName).length >= 1
+        ? dispatch(setButtonStatus('ERROR'))
+        : dispatch(setButtonStatus(''));
+    } else {
+      allTagList.filter((tag) => tag.tag_name === debouncedTagName).length >= 1
+        ? dispatch(setButtonStatus('ERROR'))
+        : dispatch(setButtonStatus(''));
+    }
+    return;
+  }, [debouncedTagName]);
+
   return (
     <Dialog open={isTagDialogOpen} onClose={onTagDialogClose}>
       <DialogTitle>NEW</DialogTitle>
       <DialogContent>
         <TextField
+          error={buttonStatus === 'ERROR'}
+          helperText={buttonStatus === 'ERROR' ? 'Duplicate Hashtag Name' : ''}
           autoFocus
           margin='dense'
           id='tag_name'
@@ -94,6 +118,7 @@ export default function TagDialog(props) {
       <DialogActions>
         <Button onClick={onTagDialogClose}>Cancel</Button>
         <LoadingButton
+          disabled={buttonStatus === 'ERROR'}
           variant='text'
           loading={buttonStatus === 'LOADING'}
           onClick={onSave}
