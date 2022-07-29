@@ -15,10 +15,10 @@ const fetchRequest = (requestConfig) => {
 
 // image module api
 export const API_IMAGE = {
-  getAllImages: async () => {
+  getPaginatedImages: async (page = '') => {
     const config = {
       method: 'get',
-      url: `/image/`,
+      url: page ? `/image/?page=${page}` : `/image/`
     };
     return fetchRequest(config);
   },
