@@ -16,19 +16,31 @@ import {
 } from '@mui/material'
 
 import axios from 'axios';
+import useImage from '../../hooks/image/useImage';
 import { useSelector, useDispatch } from 'react-redux';
 import KMSImageList from '../../components/tagdropdown';
 import { styled } from '@mui/material/styles';
-
+import { API_TAG, API_IMAGE } from '../../utils/api';
 import { setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
 
 
 // image dialog
 function ImageDialog(props) {
-    const allImageList = useSelector(imageSliceSelector.paginatedImageList);
+
+  const {
+    pageNumber,
+    onPaginate,
+    refetchImageList,
+    handleClickOpen,
+    handleClose,
+    detail,
+    setDetail
+  } = useImage()
   
-    // retrieve value from props
-    const {open, detail, handleClose} = props
+    const open = useSelector(imageSliceSelector.open);
+    const allImageList = useSelector(imageSliceSelector.paginatedImageList);
+
+  
     // set image dialog title according to title has value or not
     const title = detail.image_name === undefined ? "Upload" : "Edit";
     // create 2 states and 2 update functions to store and preview selected images
@@ -52,7 +64,6 @@ function ImageDialog(props) {
         let objectUrl = URL.createObjectURL(selectedImages[i])
         preview_tmp.push(objectUrl)
       }
-      console.log(preview_tmp)
       setPreview(preview_tmp)
       // free memory when ever this component is unmounted
       // return () => URL.revokeObjectURL(objectUrl) TODO
@@ -81,24 +92,24 @@ function ImageDialog(props) {
     }
   
     // upload function
-    const onSave = () => {
+  const onSave = async () => {
+
       for (let i = 0; i < selectedImages.length; i++) {
-        // create image object
-        const { name, size } = selectedImages[i]
-        const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join()
-        const imageObj = {
-          file: selectedImages[i],
-          image_name: name.split(".")[0],
-          // TODO: Change the hard code creator to input from UI
-          create_by: 'Jason',
+        try {
+          // create image object
+          const { name, size } = selectedImages[i]
+          const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join()
+          const imageObj = {
+            file: selectedImages[i],
+            image_name: name.split(".")[0],
+            // TODO: Change the hard code creator to input from UI
+            create_by: 'Jason',
+          }
+          const response = await API_IMAGE.createImage(imageObj);
+          
+        } catch (error) {
+          console.error(error);
         }
-        const config = {
-          headers: { 'content-type': 'multipart/form-data' }
-        }
-  
-        axios.post(`http://127.0.0.1:8000/api/image/`, imageObj, config).then(
-          response => console.log(response)
-        ).catch(error => console.error(`Error : ${error}`))
       }
       // clean upload component
       setSelectedImages(undefined)
@@ -152,7 +163,6 @@ function ImageDialog(props) {
               ))
               }
             </label>
-  
             
           </DialogContent>
           {/* buttons */}

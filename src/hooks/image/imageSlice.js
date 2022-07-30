@@ -5,12 +5,16 @@ const initalImageState = {
   imageObject: {},
   tableStatus: 'LOADING',
   buttonStatus: '',
+  open: false,
 };
 
 export const imageSlice = createSlice({
   name: 'image',
   initialState: initalImageState,
   reducers: {
+    setOpen: (state, action) => {
+      state.open = action.payload;
+    },
     setPaginatedImageList: (state, action) => {
       state.paginatedImageList = action.payload;
     },
@@ -27,6 +31,7 @@ export const imageSlice = createSlice({
 });
 
 export const {
+  setOpen,
   setPaginatedImageList,
   setImageObject,
   setTableStatus,
@@ -34,6 +39,7 @@ export const {
 } = imageSlice.actions;
 
 export const imageSliceSelector = {
+  open: (state) => state.image.open,
   paginatedImageList: (state) => state.image.paginatedImageList,
   imageObject: (state) => state.image.imageObject,
   tableStatus: (state) => state.image.tableStatus,

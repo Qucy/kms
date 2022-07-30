@@ -13,6 +13,19 @@ const fetchRequest = (requestConfig) => {
   }
 };
 
+const axiosImageClient = axios.create({
+  baseURL: process.env.REACT_APP_API_ENDPOINT,
+  headers: { 'content-type': 'multipart/form-data' },
+});
+
+const fetchImageRequest = (requestConfig) => {
+  try {
+    return axiosImageClient(requestConfig);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // image module api
 export const API_IMAGE = {
   getPaginatedImages: async (page = '') => {
@@ -22,6 +35,15 @@ export const API_IMAGE = {
     };
     return fetchRequest(config);
   },
+  createImage: async (payload) => {
+    console.log(JSON.stringify(payload))
+    const config = {
+      method: 'post',
+      url: `/image/`,
+      data: payload,
+    };
+    return fetchImageRequest(config);
+  }
 }
 
 // tag module api

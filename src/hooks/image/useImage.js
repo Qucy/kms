@@ -1,27 +1,26 @@
 import * as React from 'react';
 import { useDispatch } from 'react-redux';
 import { API_IMAGE } from '../../utils/api';
-import { setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
+import { setOpen, setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
 
 
 const useImage = () => {
     const dispatch = useDispatch();
 
-    const [open, setOpen] = React.useState(false);
-    const [pageNumber, setPageNumber] = React.useState(0);
     const [detail, setDetail] = React.useState(false);
+    const [pageNumber, setPageNumber] = React.useState(0);
 
     const onPaginate = (e, v) => setPageNumber(v ? v : 1);
 
     // function open image dialog
     const handleClickOpen = (item) => {
-        setDetail(item)
-        setOpen(true);
+      setDetail(item);
+      dispatch(setOpen(true));
     };
 
     // function close image dialog
     const handleClose = () => {
-        setOpen(false);
+      dispatch(setOpen(false));
     };
 
 
@@ -55,10 +54,10 @@ const useImage = () => {
         pageNumber,
         onPaginate,
         refetchImageList,
-        open,
-        detail,
         handleClickOpen,
-        handleClose
+        handleClose,
+        detail,
+        setDetail
     };
 }
 export default useImage;

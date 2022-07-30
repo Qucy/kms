@@ -27,6 +27,8 @@ import ImageDialog from './imageDialog';
 // function component for image list
 export default function TitlebarImageList() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
+
+  const open = useSelector(imageSliceSelector.open);
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
   const tableStatus = useSelector(imageSliceSelector.tableStatus);
   const dispatch = useDispatch();
@@ -35,10 +37,10 @@ export default function TitlebarImageList() {
     pageNumber,
     onPaginate,
     refetchImageList,
-    open,
-    detail,
     handleClickOpen,
-    handleClose
+    handleClose,
+    detail,
+    setDetail
   } = useImage()
 
   const pageCount = useRef(0)
@@ -156,7 +158,7 @@ export default function TitlebarImageList() {
       />
       </Stack>
       {/* image dialog component */}
-      <ImageDialog open={open} detail={detail} handleClose={handleClose}/>
+      <ImageDialog/> 
     </div>
   );
 }
