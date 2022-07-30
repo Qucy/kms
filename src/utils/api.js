@@ -86,3 +86,31 @@ export const API_TAG = {
     return fetchRequest(config);
   },
 };
+
+// ImageTagLink API
+export const API_IMAGETAGLINK = {
+  getImagesIDbyTagID: async (tag_id = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?tag_id=${tag_id}`
+    };
+    return fetchRequest(config);
+  },
+  getTagIDbyImagesID: async (image_ids = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?image_ids=${image_ids}`
+    };
+    return fetchRequest(config);
+  },
+
+  createImageTagLink: async (payload) => {
+    console.log(JSON.stringify(payload))
+    const config = {
+      method: 'post',
+      url: `/image-tag-link/`,
+      data: payload,
+    };
+    return fetchRequest(config);
+  }
+}

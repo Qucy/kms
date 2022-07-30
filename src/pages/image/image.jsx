@@ -16,11 +16,11 @@ import { Pagination } from '@mui/material';
 
 
 import { useEffect, useRef } from 'react';
-import { API_TAG, API_IMAGE } from '../../utils/api';
+import { API_TAG, API_IMAGE, API_IMAGETAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { setAllTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
-import { setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
+import { setOpen,setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
 
@@ -28,47 +28,23 @@ import ImageDialog from './imageDialog';
 export default function TitlebarImageList() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
 
-  const open = useSelector(imageSliceSelector.open);
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
   const tableStatus = useSelector(imageSliceSelector.tableStatus);
   const dispatch = useDispatch();
+
+  const [detail, setDetail] = React.useState(false);
 
   const {
     pageNumber,
     onPaginate,
     refetchImageList,
-    handleClickOpen,
-    handleClose,
-    detail,
-    setDetail
+    pageCount,
+    getPaginatedImage,
   } = useImage()
 
-  const pageCount = useRef(0)
+
 
   useEffect(() => {
-
-    // function to retrieve all the images
-    const getPaginatedImage  = async () => {
-      try {
-        const response = await API_IMAGE.getPaginatedImages();
-        if (response.status === 200) {
-
-          const allImage = response.data.results;
-          // Adding tag label as hard code. Pending on Tag functions
-          // TODO: Link the image tag with database data
-          allImage.forEach(e => {
-            e.tag = "Food";
-          });
-
-          dispatch(setPaginatedImageList(allImage));
-          dispatch(setTableStatus('SUCCESS'));
-
-          pageCount.current = Number(response.data.count)
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
 
     // function to retrieve all the tags TODO call when login page is load
     const fetchAllTags = async () => {
@@ -95,6 +71,12 @@ export default function TitlebarImageList() {
   const search = (event, value) => {
     /* To be implemented */
   }
+
+      // function open image dialog
+  const handleClickOpen = (item) => {
+    setDetail(item);
+    dispatch(setOpen(true));
+  };
 
   if (tableStatus === 'LOADING') {
     return (
@@ -137,7 +119,7 @@ export default function TitlebarImageList() {
               title={item.image_name}
               subtitle={item.tag}
               actionIcon={
-                <IconButton onClick={() => {return handleClickOpen(item)}} 
+                <IconButton onClick={() => { return handleClickOpen(item)}} 
                   sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                   aria-label={`info about ${item.image_name}`} >
                   <InfoIcon />
@@ -158,7 +140,7 @@ export default function TitlebarImageList() {
       />
       </Stack>
       {/* image dialog component */}
-      <ImageDialog/> 
+      <ImageDialog detail={detail}/> 
     </div>
   );
 }

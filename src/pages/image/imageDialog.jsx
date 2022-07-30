@@ -20,9 +20,9 @@ import useImage from '../../hooks/image/useImage';
 import { useSelector, useDispatch } from 'react-redux';
 import KMSImageList from '../../components/tagdropdown';
 import { styled } from '@mui/material/styles';
-import { API_TAG, API_IMAGE } from '../../utils/api';
+import { API_TAG, API_IMAGE, API_IMAGETAGLINK } from '../../utils/api';
 import { setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
-
+import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
 // image dialog
 function ImageDialog(props) {
@@ -33,13 +33,14 @@ function ImageDialog(props) {
     refetchImageList,
     handleClickOpen,
     handleClose,
-    detail,
     setDetail
   } = useImage()
   
     const open = useSelector(imageSliceSelector.open);
     const allImageList = useSelector(imageSliceSelector.paginatedImageList);
+    const allTagList = useSelector(tagSliceSelector.allTagList);
 
+    const { detail } = props
   
     // set image dialog title according to title has value or not
     const title = detail.image_name === undefined ? "Upload" : "Edit";
@@ -91,14 +92,14 @@ function ImageDialog(props) {
       handleClose()
     }
   
-    // upload function
+  // upload function
   const onSave = async () => {
+    console.log(selectedImages);
 
       for (let i = 0; i < selectedImages.length; i++) {
         try {
-          // create image object
+          // create image object and upload
           const { name, size } = selectedImages[i]
-          const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join()
           const imageObj = {
             file: selectedImages[i],
             image_name: name.split(".")[0],
@@ -106,6 +107,21 @@ function ImageDialog(props) {
             create_by: 'Jason',
           }
           const response = await API_IMAGE.createImage(imageObj);
+          const image_id = response.data.image_id
+          
+          var tag_ids = allTagList.map(a => a.id)
+          var tag_names = allTagList.map(a => a.tag_name)
+          var tag_dict = {}
+          tag_names.forEach((key, i) => tag_dict[key] = tag_ids[i]);
+
+          // Get the tag id based on tag name
+          const selectedTagsId = selectedTags.map(a => tag_dict[a]);
+
+          // TODO: Change the hard code creator to input from UI
+          let create_by = '45072289'
+
+          const payload = { tag_ids: selectedTagsId, image_id: image_id, create_by: create_by, creation_datetime: new Date() };
+          const link_response = await API_IMAGETAGLINK.createImageTagLink(payload);
           
         } catch (error) {
           console.error(error);
