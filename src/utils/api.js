@@ -23,13 +23,14 @@ export const API_IMAGE = {
     return fetchRequest(config);
   },
 
-  downloadImage: async (image_url = '', image_name = '') => {
+  deleteImage: async (id) => {
     const config = {
-      method: 'get',
-      url: `/image/download/?image_url=${image_url}&image_name=${image_name}`,
+      method: 'delete',
+      url: `/image/${id}/`,
     };
     return fetchRequest(config);
   },
+
 }
 
 // tag module api

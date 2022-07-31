@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import {
   Stack,
   ImageList,
@@ -11,22 +12,25 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  DialogContentText,
   Autocomplete,
+  Pagination,
   CircularProgress,
   Checkbox
 } from '@mui/material'
-import { styled } from '@mui/material/styles';
+import { LoadingButton } from '@mui/lab';
 import { saveAs } from 'file-saver';
+import { styled } from '@mui/material/styles';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
-import { Pagination } from '@mui/material';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import KMSImageList from '../../components/tagdropdown';
-import axios from 'axios';
 import { useEffect } from 'react';
 import { API_TAG, API_IMAGE } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAllTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { setAllImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
+import useImageDev from '../../hooks/image/useImageDev';
 
 const url = 'http://127.0.0.1:8000/api/';
 
@@ -35,6 +39,9 @@ export default function TitlebarImageList() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
   const allImageList = useSelector(imageSliceSelector.allImageList);
   const tableStatus = useSelector(imageSliceSelector.tableStatus);
+  const imageObject = useSelector(imageSliceSelector.imageObject);
+  const buttonStatus = useSelector(imageSliceSelector.buttonStatus);
+
   const dispatch = useDispatch();
 
   const [open, setOpen] = React.useState(false);
@@ -43,6 +50,14 @@ export default function TitlebarImageList() {
   const [detail, setDetail] = React.useState(false);
   const [imageList, setImageList] = React.useState(defaultData);
   const [previewImageList, setPreviewImageList] = React.useState(defaultData);
+
+
+  const {
+    isDeleteDialogOpen,
+    onDeleteImage,
+    onDeleteDialogClose,
+    onSaveDelete
+  } = useImageDev(); //TODO merge into useImage.js
 
   
   useEffect(() => {
@@ -104,7 +119,7 @@ export default function TitlebarImageList() {
   // function to download selected image
   const downloadImage = async (item) => {
     // Fetch the image from server
-    axios.get(`${url}image/download/?image_url=${item.image_url}`, {responseType: 'blob'}).then((response) => {
+    axios.get(`${process.env.REACT_APP_API_ENDPOINT}/image/download/?image_url=${item.image_url}`, {responseType: 'blob'}).then((response) => {
       // file name
       const file_name = item.image_name + "." + item.image_type
       // save the file.
@@ -179,42 +194,40 @@ export default function TitlebarImageList() {
           {/* Loop all the images */}
           {previewImageList.map((item) => (
           <ImageListItem key={item.id}>
+            
             {/* image object */}
             <img
               src={`data:image/jpeg;base64,${item.img}`}
               alt={item.image_name}
               loading="lazy" />
-            {/* edit icon */}
+            
+            {/* edit/download/delete icons  */}
             <ImageListItemBar
               title={item.image_name}
               subtitle={item.tag}
               actionIcon={
-                <IconButton onClick={() => {return handleClickOpen(item)}} 
-                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                  aria-label={`info about ${item.image_name}`} >
-                  <BorderColorIcon />
-                </IconButton>
+                <>
+                  {/* edit icon  */}
+                  <IconButton onClick={() => {return handleClickOpen(item)}}
+                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                    aria-label={`update ${item.image_name}`} >
+                    <BorderColorIcon />
+                  </IconButton>
+                  {/* download icon  */}
+                  <IconButton onClick={() => {return downloadImage(item)}}
+                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                    aria-label={`update ${item.image_name}`} >
+                    <ArchiveIcon/>
+                  </IconButton>
+                  {/* delete icon  */}
+                  <IconButton onClick={(e) => onDeleteImage(e, item)}
+                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                    aria-label={`update ${item.image_name}`} >
+                    <DeleteOutlinedIcon />
+                  </IconButton>
+                </>
                 }
             />
-            {/* download icon */}
-             <ImageListItemBar
-              sx={{
-                background:
-                  'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                  'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
-              }}
-              title={item.title}
-              position="top"
-              actionPosition="left"
-              actionIcon={
-                <IconButton onClick={() => {return downloadImage(item)}}
-                  sx={{ color: 'white' }}
-                  aria-label={`star ${item.image_name}`}
-                >
-                  <ArchiveIcon />
-                </IconButton>
-              }
-             />
           </ImageListItem>
           ))}
         </ImageList>
@@ -225,13 +238,41 @@ export default function TitlebarImageList() {
         {/* pagnation component */}
         <Pagination count={pageNumer} page={page} onChange={handlePageChange} />
       </Stack>
-      {/* image dialog component */}
-      <ImageDialog open={open} detail={detail} imageList={imageList} setImageList={setImageList} setPreviewImageList={setPreviewImageList} handleClose={handleClose}/>
+      {/* image save/update dialog component */}
+      <ImageDialog open={open} 
+                   detail={detail} 
+                   imageList={imageList} 
+                   setImageList={setImageList} 
+                   setPreviewImageList={setPreviewImageList} 
+                   handleClose={handleClose}/>
+      {/* image delete confirmation dialog */}
+      <Dialog
+          open={isDeleteDialogOpen}
+          onClose={onDeleteDialogClose}
+          aria-labelledby='alert-dialog-title'
+          aria-describedby='alert-dialog-description'
+        >
+          <DialogTitle id='alert-dialog-title'>{'Confirm Deletion of Image'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id='alert-dialog-description'>
+              Deletion of image cannot be redo. Click "Confirm" to proceed.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onDeleteDialogClose}>Close</Button>
+            <LoadingButton
+              loading={buttonStatus === 'LOADING'}
+              onClick={(e) => onSaveDelete(e, imageObject)}
+            >
+              {buttonStatus === 'SUCCESS' ? 'Success!' : 'Confirm'}
+            </LoadingButton>
+          </DialogActions>
+        </Dialog>
     </div>
   );
 }
 
-// image dialog
+// image save/update dialog
 function ImageDialog(props) {
   // retrieve value from props
   const {open, detail, handleClose, imageList, setImageList, setPreviewImageList} = props
