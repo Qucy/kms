@@ -12,10 +12,13 @@ import {
   DialogContent,
   DialogTitle,
   Autocomplete,
-  CircularProgress
+  CircularProgress,
+  Checkbox
 } from '@mui/material'
 import { styled } from '@mui/material/styles';
-import InfoIcon from '@mui/icons-material/Info';
+import { saveAs } from 'file-saver';
+import ArchiveIcon from '@mui/icons-material/Archive';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { Pagination } from '@mui/material';
 import KMSImageList from '../../components/tagdropdown';
 import axios from 'axios';
@@ -42,8 +45,6 @@ export default function TitlebarImageList() {
   const [previewImageList, setPreviewImageList] = React.useState(defaultData);
 
   
-
-
   useEffect(() => {
 
     // function to retrieve all the images
@@ -98,6 +99,19 @@ export default function TitlebarImageList() {
       setImageList(allImage);
       setpageNumer(Math.ceil(response.data.count / 10))
     }).catch(error => console.error(`Error : ${error}`))
+  }
+
+  // function to download selected image
+  const downloadImage = async (item) => {
+    // Fetch the image from server
+    axios.get(`${url}image/download/?image_url=${item.image_url}`, {responseType: 'blob'}).then((response) => {
+      // file name
+      const file_name = item.image_name + "." + item.image_type
+      // save the file.
+      saveAs(response.data, file_name);
+    }).catch((response) => {
+        console.error("Could not Download the image from the backend.", response);
+    });
   }
 
   // function open image dialog
@@ -165,10 +179,12 @@ export default function TitlebarImageList() {
           {/* Loop all the images */}
           {previewImageList.map((item) => (
           <ImageListItem key={item.id}>
+            {/* image object */}
             <img
               src={`data:image/jpeg;base64,${item.img}`}
               alt={item.image_name}
               loading="lazy" />
+            {/* edit icon */}
             <ImageListItemBar
               title={item.image_name}
               subtitle={item.tag}
@@ -176,18 +192,38 @@ export default function TitlebarImageList() {
                 <IconButton onClick={() => {return handleClickOpen(item)}} 
                   sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                   aria-label={`info about ${item.image_name}`} >
-                  <InfoIcon />
-                </IconButton>}
+                  <BorderColorIcon />
+                </IconButton>
+                }
             />
+            {/* download icon */}
+             <ImageListItemBar
+              sx={{
+                background:
+                  'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
+                  'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+              }}
+              title={item.title}
+              position="top"
+              actionPosition="left"
+              actionIcon={
+                <IconButton onClick={() => {return downloadImage(item)}}
+                  sx={{ color: 'white' }}
+                  aria-label={`star ${item.image_name}`}
+                >
+                  <ArchiveIcon />
+                </IconButton>
+              }
+             />
           </ImageListItem>
           ))}
         </ImageList>
       </Stack>
       <Stack direction="row" justifyContent="space-between">
-      {/* other function */}
-      <Button variant="contained" onClick={handleClickOpen}>UPLOAD</Button>
-      {/* pagnation component */}
-      <Pagination count={pageNumer} page={page} onChange={handlePageChange} />
+        {/* upload button */}
+        <Button variant="contained" onClick={handleClickOpen}>UPLOAD</Button>
+        {/* pagnation component */}
+        <Pagination count={pageNumer} page={page} onChange={handlePageChange} />
       </Stack>
       {/* image dialog component */}
       <ImageDialog open={open} detail={detail} imageList={imageList} setImageList={setImageList} setPreviewImageList={setPreviewImageList} handleClose={handleClose}/>

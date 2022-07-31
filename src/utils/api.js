@@ -22,6 +22,14 @@ export const API_IMAGE = {
     };
     return fetchRequest(config);
   },
+
+  downloadImage: async (image_url = '', image_name = '') => {
+    const config = {
+      method: 'get',
+      url: `/image/download/?image_url=${image_url}&image_name=${image_name}`,
+    };
+    return fetchRequest(config);
+  },
 }
 
 // tag module api
