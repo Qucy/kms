@@ -155,7 +155,7 @@ export default function Tags() {
               loading={buttonStatus === 'LOADING'}
               onClick={(e) => onSaveDelete(e, tagObject)}
             >
-              {buttonStatus === 'SUCCESS' ? 'Success!' : 'Save'}
+              {buttonStatus === 'SUCCESS' ? 'Success!' : 'Confirm'}
             </LoadingButton>
           </DialogActions>
         </Dialog>
