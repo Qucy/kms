@@ -94,39 +94,42 @@ function ImageDialog(props) {
   
   // upload function
   const onSave = async () => {
-    console.log(selectedImages);
-
-      for (let i = 0; i < selectedImages.length; i++) {
-        try {
-          // create image object and upload
-          const { name, size } = selectedImages[i]
-          const imageObj = {
-            file: selectedImages[i],
-            image_name: name.split(".")[0],
-            // TODO: Change the hard code creator to input from UI
-            create_by: 'Jason',
-          }
-          const response = await API_IMAGE.createImage(imageObj);
-          const image_id = response.data.image_id
-          
-          var tag_ids = allTagList.map(a => a.id)
-          var tag_names = allTagList.map(a => a.tag_name)
-          var tag_dict = {}
-          tag_names.forEach((key, i) => tag_dict[key] = tag_ids[i]);
-
-          // Get the tag id based on tag name
-          const selectedTagsId = selectedTags.map(a => tag_dict[a]);
-
-          // TODO: Change the hard code creator to input from UI
-          let create_by = '45072289'
-
-          const payload = { tag_ids: selectedTagsId, image_id: image_id, create_by: create_by, creation_datetime: new Date() };
-          const link_response = await API_IMAGETAGLINK.createImageTagLink(payload);
-          
-        } catch (error) {
-          console.error(error);
+    // Handling multiple images save
+    for (let i = 0; i < selectedImages.length; i++) {
+      try {
+        // create image object and upload
+        const { name, size } = selectedImages[i]
+        // TODO: Change the hard code creator to input from UI
+        const imageObj = {
+          file: selectedImages[i],
+          image_name: name.split(".")[0],
+          create_by: 'Jason',
         }
+        const response = await API_IMAGE.createImage(imageObj);
+        
+        // Getting the returned image_id in backend
+        const image_id = response.data.image_id
+
+        // Get the tag id based on tag name
+        var tag_ids = allTagList.map(a => a.id)
+        var tag_names = allTagList.map(a => a.tag_name)
+        var tag_dict = {}
+        tag_names.forEach((key, i) => tag_dict[key] = tag_ids[i]);
+        const selectedTagsId = selectedTags.map(a => tag_dict[a]);
+
+        // TODO: Change the hard code creator to input from UI
+        const payload = {
+          tag_ids: selectedTagsId,
+          image_id: image_id,
+          create_by:  '45072289',
+          creation_datetime: new Date()
+        };
+        const link_response = await API_IMAGETAGLINK.createImageTagLink(payload);
+        
+      } catch (error) {
+        console.error(error);
       }
+    }
       // clean upload component
       setSelectedImages(undefined)
       // close dialog

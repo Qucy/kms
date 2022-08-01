@@ -32,12 +32,14 @@ const useImage = () => {
     }
 
     // function to retrieve all the images
-  const getPaginatedImage = async (pageNumber = 0) => {
+  const getPaginatedImage = async (alltags, pageNumber = 0) => {
     try {
-        if (allTagList.length === 0) {
-          await fetchAllTags()
-
+        if (alltags.length !== 0) {
+          const allTagList = await API_TAG.getAllTags().data;
         }
+      
+        console.log(alltags)
+
         const response = await API_IMAGE.getPaginatedImages(pageNumber);
         if (response.status === 200) {
 
@@ -76,7 +78,7 @@ const useImage = () => {
               e.tag = image_tags.join();
             });
 
-            
+
             dispatch(setPaginatedImageList(allImage));
             dispatch(setTableStatus('SUCCESS'));
 

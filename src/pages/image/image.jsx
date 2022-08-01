@@ -53,14 +53,15 @@ export default function TitlebarImageList() {
         if (response.status === 200) {
           dispatch(setAllTagList(response.data));
         }
+        return response.data.map(a => a)
       } catch (error) {
         console.error(error);
       }
     }
 
-    fetchAllTags();
-    getPaginatedImage();
+    let alltags = fetchAllTags().then(function(alltags) { return alltags });
 
+    getPaginatedImage(alltags);
   }, []);
   
   React.useEffect(() => {
