@@ -8,62 +8,80 @@ import {
   IconButton,
   Button,
   Autocomplete,
-  CircularProgress
-} from '@mui/material'
+  CircularProgress,
+} from '@mui/material';
 
 import InfoIcon from '@mui/icons-material/Info';
 import { Pagination } from '@mui/material';
-
 
 import { useEffect, useRef } from 'react';
 import { API_TAG, API_IMAGE, API_IMAGETAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { setAllTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
-import { setOpen,setPaginatedImageList, setTableStatus, imageSliceSelector } from '../../hooks/image/imageSlice';
+import {
+  setOpen,
+  setPaginatedImageList,
+  setTableStatus,
+  imageSliceSelector,
+} from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
 
 // function component for image list
 export default function TitlebarImageList() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
-
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
   const tableStatus = useSelector(imageSliceSelector.tableStatus);
   const dispatch = useDispatch();
 
   const [detail, setDetail] = React.useState(false);
 
-  const {
-    pageNumber,
-    onPaginate,
-    refetchImageList,
-    pageCount,
-    getPaginatedImage,
-  } = useImage()
+  const { pageNumber, onPaginate, refetchImageList, pageCount, getPaginatedImage } =
+    useImage();
 
+  // useEffect(() => {
+  //   // function to retrieve all the tags TODO call when login page is load
+  //   const fetchAllTags = async () => {
+  //     try {
+  //       const response = await API_TAG.getAllTags();
+  //       if (response.status === 200) {
+  //         dispatch(setAllTagList(response.data));
+  //       }
+  //       return response.data.map((a) => a);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
 
+  //   let alltags = fetchAllTags().then(function (alltags) {
+  //     return alltags;
+  //   });
+
+  //   getPaginatedImage(alltags);
+  // }, []);
 
   useEffect(() => {
-
-    // function to retrieve all the tags TODO call when login page is load
     const fetchAllTags = async () => {
       try {
         const response = await API_TAG.getAllTags();
         if (response.status === 200) {
           dispatch(setAllTagList(response.data));
         }
-        return response.data.map(a => a)
+        return response.data;
       } catch (error) {
         console.error(error);
       }
-    }
+    };
 
-    let alltags = fetchAllTags().then(function(alltags) { return alltags });
+    const initImage = async () => {
+      const allTags = await fetchAllTags();
+      getPaginatedImage(null, allTags);
+    };
 
-    getPaginatedImage(alltags);
+    initImage();
   }, []);
-  
+
   React.useEffect(() => {
     refetchImageList(pageNumber);
   }, [pageNumber]);
@@ -71,9 +89,9 @@ export default function TitlebarImageList() {
   // search function for image list
   const search = (event, value) => {
     /* To be implemented */
-  }
+  };
 
-      // function open image dialog
+  // function open image dialog
   const handleClickOpen = (item) => {
     setDetail(item);
     dispatch(setOpen(true));
@@ -93,55 +111,63 @@ export default function TitlebarImageList() {
       <Stack spacing={3} sx={{ width: 500 }}>
         <Autocomplete
           onChange={search}
-          multiple
-          id="tags-standard"
-          options={allTagList.map(t => t.tag_name)}
+          // multiple
+          id='tags-standard'
+          options={allTagList.map((t) => t.tag_name)}
           getOptionLabel={(option) => option}
           renderInput={(params) => (
             <TextField
               {...params}
-              variant="standard"
-              label="Search by hash tag"
-              placeholder="Hash tag"
+              variant='standard'
+              label='Search by hash tag'
+              placeholder='Hash tag'
             />
           )}
         />
       </Stack>
       <Stack>
-        <ImageList sx={{height:580}} cols={5}>
+        <ImageList sx={{ height: 580 }} cols={5}>
           {/* Loop all the images */}
           {allImageList.map((item) => (
-          <ImageListItem key={item.id}>
-            <img
-              src={`data:image/jpeg;base64,${item.img}`}
-              alt={item.image_name}
-              loading="lazy" />
-            <ImageListItemBar
-              title={item.image_name}
-              subtitle={item.tag}
-              actionIcon={
-                <IconButton onClick={() => { return handleClickOpen(item)}} 
-                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                  aria-label={`info about ${item.image_name}`} >
-                  <InfoIcon />
-                </IconButton>}
-            />
-          </ImageListItem>
+            <ImageListItem key={item.id}>
+              <img
+                src={`data:image/jpeg;base64,${item.img}`}
+                alt={item.image_name}
+                loading='lazy'
+              />
+              <ImageListItemBar
+                title={item.image_name}
+                subtitle={item.tag}
+                actionIcon={
+                  <IconButton
+                    onClick={() => {
+                      return handleClickOpen(item);
+                    }}
+                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                    aria-label={`info about ${item.image_name}`}
+                  >
+                    <InfoIcon />
+                  </IconButton>
+                }
+              />
+            </ImageListItem>
           ))}
         </ImageList>
       </Stack>
-      <Stack direction="row" justifyContent="space-between">
-      {/* other function */}
-      <Button variant="contained" onClick={handleClickOpen}>UPLOAD</Button>
-      {/* pagnation component */}
-      <Pagination
-        count={Math.ceil(pageCount.current / 10)}
-        page={pageNumber}
-        onChange={onPaginate}
-      />
+      <Stack direction='row' justifyContent='space-between'>
+        {/* other function */}
+        <Button variant='contained' onClick={handleClickOpen}>
+          UPLOAD
+        </Button>
+        {/* pagnation component */}
+        <Pagination
+          count={Math.ceil(pageCount.current / 10)}
+          page={pageNumber}
+          onChange={onPaginate}
+        />
       </Stack>
       {/* image dialog component */}
-      <ImageDialog detail={detail}/> 
+      <ImageDialog detail={detail} />
     </div>
   );
 }
