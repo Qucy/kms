@@ -6,6 +6,9 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 
+import { useSelector } from 'react-redux';
+import { tagSliceSelector } from '../hooks/tag/tagSlice';
+
 const names = [
   '#Electronic',
   '#Food',
@@ -16,6 +19,9 @@ const names = [
 ];
 
 export default function KMSImageList(props) {
+  const allTagList = useSelector(tagSliceSelector.allTagList);
+  const allTagListName = allTagList.map(a => a.tag_name);
+
   // retrieve tags
   const {oldTags, setSelectedTags} = props
   var initTags = []
@@ -50,7 +56,7 @@ export default function KMSImageList(props) {
           </Box>
         )}
       >
-        {names.map((name) => (
+        {allTagListName.map((name) => (
           <MenuItem key={name} value={name}>
             {name}
           </MenuItem>

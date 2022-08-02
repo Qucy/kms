@@ -13,12 +13,26 @@ const fetchRequest = (requestConfig) => {
   }
 };
 
+const axiosImageClient = axios.create({
+  baseURL: process.env.REACT_APP_API_ENDPOINT,
+  headers: { 'content-type': 'multipart/form-data' },
+});
+
+const fetchImageRequest = (requestConfig) => {
+  try {
+    return axiosImageClient(requestConfig);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // image module api
 export const API_IMAGE = {
-  getAllImages: async () => {
+  
+  getPaginatedImages: async (page = '') => {
     const config = {
       method: 'get',
-      url: `/image/`,
+      url: page ? `/image/?page=${page}` : `/image/`
     };
     return fetchRequest(config);
   },
@@ -31,6 +45,15 @@ export const API_IMAGE = {
     return fetchRequest(config);
   },
 
+  createImage: async (payload) => {
+    console.log(JSON.stringify(payload))
+    const config = {
+      method: 'post',
+      url: `/image/`,
+      data: payload,
+    };
+    return fetchImageRequest(config);
+  }
 }
 
 // tag module api
@@ -73,3 +96,31 @@ export const API_TAG = {
     return fetchRequest(config);
   },
 };
+
+// ImageTagLink API
+export const API_IMAGETAGLINK = {
+  getImagesIDbyTagID: async (tag_id = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?tag_id=${tag_id}`
+    };
+    return fetchRequest(config);
+  },
+  getTagIDbyImagesID: async (image_ids = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?image_ids=${image_ids}`
+    };
+    return fetchRequest(config);
+  },
+
+  createImageTagLink: async (payload) => {
+    console.log(JSON.stringify(payload))
+    const config = {
+      method: 'post',
+      url: `/image-tag-link/`,
+      data: payload,
+    };
+    return fetchRequest(config);
+  }
+}

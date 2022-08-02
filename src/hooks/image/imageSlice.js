@@ -4,15 +4,15 @@ const initalImageState = {
   imageList: [],
   imageObject: {},
   tableStatus: 'LOADING',
-  buttonStatus: '',
+  buttonStatus: ''
 };
 
 export const imageSlice = createSlice({
   name: 'image',
   initialState: initalImageState,
   reducers: {
-    setAllImageList: (state, action) => {
-      state.allImageList = action.payload;
+    setPaginatedImageList: (state, action) => {
+      state.paginatedImageList = action.payload;
     },
     setImageObject: (state, action) => {
       state.imageObject = action.payload;
@@ -27,14 +27,14 @@ export const imageSlice = createSlice({
 });
 
 export const {
-  setAllImageList,
+  setPaginatedImageList,
   setImageObject,
   setTableStatus,
   setButtonStatus,
 } = imageSlice.actions;
 
 export const imageSliceSelector = {
-  allImageList: (state) => state.image.allImageList,
+  paginatedImageList: (state) => state.image.paginatedImageList,
   imageObject: (state) => state.image.imageObject,
   tableStatus: (state) => state.image.tableStatus,
   buttonStatus: (state) => state.image.buttonStatus,
