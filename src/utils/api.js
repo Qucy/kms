@@ -108,12 +108,18 @@ export const API_IMAGETAGLINK = {
   },
 
   createImageTagLink: async (payload) => {
-    console.log(JSON.stringify(payload))
     const config = {
       method: 'post',
       url: `/image-tag-link/`,
       data: payload,
     };
     return fetchRequest(config);
-  }
+  },
+  deleteImageTagLink: async (image_name) => {
+    const config = {
+      method: 'delete',
+      url: `/image-tag-link/?image_name=${image_name}`,
+    };
+    return fetchRequest(config);
+  },
 }
