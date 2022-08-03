@@ -99,17 +99,10 @@ export const API_TAG = {
 
 // ImageTagLink API
 export const API_IMAGETAGLINK = {
-  getImagesIDbyTagID: async (tag_id = '') => {
+  getTagNamesbyImagesNames: async (image_names = '') => {
     const config = {
       method: 'get',
-      url: `/image-tag-link/?tag_id=${tag_id}`
-    };
-    return fetchRequest(config);
-  },
-  getTagIDbyImagesID: async (image_ids = '') => {
-    const config = {
-      method: 'get',
-      url: `/image-tag-link/?image_ids=${image_ids}`
+      url: `/image-tag-link/?image_names=${image_names}`
     };
     return fetchRequest(config);
   },
