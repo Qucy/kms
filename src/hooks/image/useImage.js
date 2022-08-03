@@ -8,6 +8,7 @@ import {
   setButtonStatus
 } from '../../hooks/image/imageSlice';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
+import { setAllTagList } from '../../hooks/tag/tagSlice';
 
 const useImage = () => {
 
@@ -50,46 +51,35 @@ const useImage = () => {
   };
 
   //function to retrieve all the images
-  const getPaginatedImage = async (pageNumber = 0, alltags) => {
+  const getPaginatedImage = async (pageNumber = 0) => {
     try {
-      // if (alltags.length !== 0) {
-      //   const allTagList = await API_TAG.getAllTags().data;
-      // }
 
       const response = await API_IMAGE.getPaginatedImages(pageNumber);
       if (response.status === 200) {
         const allImage = response.data.results;
-        const image_tags = allImage.map((a) => a.id);
-        const link_response = await API_IMAGETAGLINK.getTagIDbyImagesID(image_tags);
-        const linkage_list = link_response.data.map((a) => [a.image_id, a.tag_id]);
-        var linkage_dict = {};
-
-        for (let i in linkage_list) {
-          const image_id = linkage_list[i][0];
-          const tag_id = linkage_list[i][1];
-
-          if (image_id in linkage_dict) {
-            linkage_dict[image_id].push(tag_id);
-          } else {
-            linkage_dict[image_id] = [tag_id];
-          }
-        }
-
-        var tag_ids = alltags.map((a) => a.id);
-        var tag_names = alltags.map((a) => a.tag_name);
-        var tag_dict = {};
-        tag_ids.forEach((key, i) => (tag_dict[key] = tag_names[i]));
+        const image_names = allImage.map((a) => a.image_name);
+        const link_response = await API_IMAGETAGLINK.getTagNamesbyImagesNames(image_names);
 
         if (link_response.status === 200) {
-          // Adding tag label as hard code. Pending on Tag functions
-          // TODO: Link the image tag with database data
-          allImage.forEach((e) => {
-            var image_tag_ids = linkage_dict[e.id];
-            var image_tags = [];
-            for (var i in image_tag_ids) {
-              image_tags.push(tag_dict[image_tag_ids[i]]);
+          const linkage_list = link_response.data.map((a) => [a.image_name, a.tag_name]);
+          var linkage_dict = {};
+  
+          for (let i in linkage_list) {
+            const image_name = linkage_list[i][0];
+            const tag_name = linkage_list[i][1];
+  
+            if (image_name in linkage_dict) {
+              linkage_dict[image_name].push(tag_name);
+            } else {
+              linkage_dict[image_name] = [tag_name];
             }
-            e.tag = image_tags.join();
+          }
+
+          allImage.forEach((e) => {
+            var image_tag_name = linkage_dict[e.image_name];
+            if (image_tag_name) {
+              e.tag = image_tag_name.join();
+            }
           });
 
           dispatch(setPaginatedImageList(allImage));
@@ -103,11 +93,28 @@ const useImage = () => {
     }
   };
 
+  const fetchAllTags = async () => {
+    try {
+      const response = await API_TAG.getAllTags();
+      if (response.status === 200) {
+        dispatch(setAllTagList(response.data));
+      }
+      return response.data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const initImage = async () => {
+    const allTags = await fetchAllTags();
+    getPaginatedImage(null, allTags);
+  };
+
   // function to refresh image list
   const refetchImageList = React.useCallback(
     async (pageNumber) => {
       dispatch(setTableStatus('LOADING'));
-      getPaginatedImage(pageNumber, allTagList);
+      getPaginatedImage(pageNumber);
     },
     [pageNumber, allTagList]
   );
@@ -142,7 +149,7 @@ const useImage = () => {
     onDetailDialogOpen,
     onDetailDialogClose,
     
-    getPaginatedImage,
+    initImage,
     detail,
     setDetail,
     pageCount,

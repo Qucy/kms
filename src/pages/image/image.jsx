@@ -23,9 +23,8 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useEffect } from 'react';
-import { API_TAG } from '../../utils/api';
-import { useSelector, useDispatch } from 'react-redux';
-import { setAllTagList, tagSliceSelector } from '../../hooks/tag/tagSlice';
+import { useSelector } from 'react-redux';
+import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { imageSliceSelector } from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
@@ -39,14 +38,12 @@ export default function TitlebarImageList() {
   const imageObject = useSelector(imageSliceSelector.imageObject);
   const buttonStatus = useSelector(imageSliceSelector.buttonStatus);
 
-  const dispatch = useDispatch();
-
   const [detail, setDetail] = React.useState(false);
   const { pageNumber, 
           onPaginate, 
           refetchImageList, 
           pageCount, 
-          getPaginatedImage, 
+          initImage, 
           isDetailDialogOpen,
           onDetailDialogOpen,
           onDetailDialogClose,
@@ -56,24 +53,6 @@ export default function TitlebarImageList() {
           onSaveDelete} = useImage();
   
   useEffect(() => {
-
-    const fetchAllTags = async () => {
-      try {
-        const response = await API_TAG.getAllTags();
-        if (response.status === 200) {
-          dispatch(setAllTagList(response.data));
-        }
-        return response.data;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const initImage = async () => {
-      const allTags = await fetchAllTags();
-      getPaginatedImage(null, allTags);
-    };
-
     initImage();
   }, []);
 
