@@ -13,13 +13,11 @@ import KMSImageList from '../../components/tagdropdown';
 import { styled } from '@mui/material/styles';
 import { API_IMAGE, API_IMAGETAGLINK } from '../../utils/api';
 import { imageSliceSelector } from '../../hooks/image/imageSlice';
-import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
 // image dialog
 function ImageDialog(props) {
 
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
-  const allTagList = useSelector(tagSliceSelector.allTagList);
   const { detail, isDetailDialogOpen, onDetailDialogClose } = props;
 
   // set image dialog title according to title has value or not
@@ -78,7 +76,7 @@ function ImageDialog(props) {
     for (let i = 0; i < selectedImages.length; i++) {
       try {
         // create image object and upload
-        const { name, size } = selectedImages[i];
+        const { name } = selectedImages[i];
         // TODO: Change the hard code creator to input from UI
         const imageObj = {
           file: selectedImages[i],
@@ -87,20 +85,10 @@ function ImageDialog(props) {
         };
         const response = await API_IMAGE.createImage(imageObj);
 
-        // Getting the returned image_id in backend
-        const image_id = response.data.image_id;
-
-        // Get the tag id based on tag name
-        var tag_ids = allTagList.map((a) => a.id);
-        var tag_names = allTagList.map((a) => a.tag_name);
-        var tag_dict = {};
-        tag_names.forEach((key, i) => (tag_dict[key] = tag_ids[i]));
-        const selectedTagsId = selectedTags.map((a) => tag_dict[a]);
-
         // TODO: Change the hard code creator to input from UI
         const payload = {
-          tag_ids: selectedTagsId,
-          image_id: image_id,
+          tag_names: selectedTags,
+          image_name: name.split('.')[0],
           create_by: '45072289',
           creation_datetime: new Date(),
         };
@@ -116,16 +104,23 @@ function ImageDialog(props) {
   };
 
   // update function
-  const onUpdate = () => {
-    const id = detail.id;
-    const tags = selectedTags.length === 1 ? selectedTags[0] : selectedTags.join();
-    // update tags
-    allImageList.map((image) => {
-      if (image.id === id) {
-        image.tag = tags;
-        return image;
-      }
-    });
+  const onUpdate = async () => {
+    console.log(detail)
+    const image_name = detail.image_name;
+
+    // delete tags
+    const delete_response = await API_IMAGETAGLINK.deleteImageTagLink(image_name);
+
+    // re-create tags
+    // TODO: Change the hard code creator to input from UI
+    const payload = {
+      tag_names: selectedTags,
+      image_name: image_name,
+      create_by: '45072289',
+      creation_datetime: new Date(),
+    };
+    const link_response = await API_IMAGETAGLINK.createImageTagLink(payload);
+
     // close dialog
     onDetailDialogClose();
   };
