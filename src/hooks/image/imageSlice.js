@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initalImageState = {
-  imageList: [],
+  paginatedImageList: [],
   imageObject: {},
   tableStatus: 'LOADING',
-  buttonStatus: ''
+  buttonStatus: '',
 };
 
 export const imageSlice = createSlice({
@@ -26,12 +26,8 @@ export const imageSlice = createSlice({
   },
 });
 
-export const {
-  setPaginatedImageList,
-  setImageObject,
-  setTableStatus,
-  setButtonStatus,
-} = imageSlice.actions;
+export const { setPaginatedImageList, setImageObject, setTableStatus, setButtonStatus } =
+  imageSlice.actions;
 
 export const imageSliceSelector = {
   paginatedImageList: (state) => state.image.paginatedImageList,

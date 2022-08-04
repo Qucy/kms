@@ -1,22 +1,32 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { API_IMAGE, API_IMAGETAGLINK, API_TAG } from '../../utils/api';
+import { imageSliceSelector } from '../../hooks/image/imageSlice';
 import {
   setPaginatedImageList,
   setTableStatus,
   setImageObject,
-  setButtonStatus
+  setButtonStatus,
 } from '../../hooks/image/imageSlice';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
 const useImage = () => {
+  const allTagList = useSelector(tagSliceSelector.allTagList);
+  const allImageList = useSelector(imageSliceSelector.paginatedImageList);
 
   const dispatch = useDispatch();
-  const pageCount = React.useRef(0);
+
   const [detail, setDetail] = React.useState(false);
-  const [pageNumber, setPageNumber] = React.useState(0);
-  const onPaginate = (e, v) => setPageNumber(v ? v : 1);
-  const allTagList = useSelector(tagSliceSelector.allTagList);
+  // const [pageNumber, setPageNumber] = React.useState(0);
+  const [isReachedMaxImages, setIsReachMaxImages] = React.useState(false);
+  // const pageCount = React.useRef(null);
+  const imageCount = React.useRef(null);
+
+  React.useEffect(() => {
+    setIsReachMaxImages(allImageList.length === imageCount.current);
+  }, [allImageList]);
+
+  // const onPaginate = (e, v) => setPageNumber(v ? v : 1);
 
   // image upload & edit dialog open & close control
   const [isDetailDialogOpen, setIsDetailDialogOpen] = React.useState(false);
@@ -26,11 +36,10 @@ const useImage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const toggleDeleteDialog = () => setIsDeleteDialogOpen((_prev) => !_prev);
 
-
   // function open image detail dialog
   const onDetailDialogOpen = () => {
     toggleDetailDialog();
-  }
+  };
 
   // function close image detail dialog
   const onDetailDialogClose = () => {
@@ -50,7 +59,9 @@ const useImage = () => {
   };
 
   //function to retrieve all the images
-  const getPaginatedImage = async (pageNumber = 0, alltags) => {
+  const getPaginatedImage = async (pageNumber = 1, alltags = allTagList) => {
+    dispatch(setTableStatus('LOADING'));
+
     try {
       // if (alltags.length !== 0) {
       //   const allTagList = await API_TAG.getAllTags().data;
@@ -58,6 +69,7 @@ const useImage = () => {
 
       const response = await API_IMAGE.getPaginatedImages(pageNumber);
       if (response.status === 200) {
+        imageCount.current = response.data.count;
         const allImage = response.data.results;
         const image_tags = allImage.map((a) => a.id);
         const link_response = await API_IMAGETAGLINK.getTagIDbyImagesID(image_tags);
@@ -92,10 +104,8 @@ const useImage = () => {
             e.tag = image_tags.join();
           });
 
-          dispatch(setPaginatedImageList(allImage));
+          dispatch(setPaginatedImageList([...allImageList, ...allImage]));
           dispatch(setTableStatus('SUCCESS'));
-
-          pageCount.current = Number(response.data.count);
         }
       }
     } catch (error) {
@@ -109,7 +119,7 @@ const useImage = () => {
       dispatch(setTableStatus('LOADING'));
       getPaginatedImage(pageNumber, allTagList);
     },
-    [pageNumber, allTagList]
+    [allTagList]
   );
 
   // function to delete image
@@ -134,26 +144,26 @@ const useImage = () => {
   };
 
   return {
-    pageNumber,
-    onPaginate,
+    // pageNumber,
+    // onPaginate,
     refetchImageList,
+
+    imageCount,
+    isReachedMaxImages,
 
     isDetailDialogOpen,
     onDetailDialogOpen,
     onDetailDialogClose,
-    
+
     getPaginatedImage,
     detail,
     setDetail,
-    pageCount,
-
+    // pageCount,
 
     isDeleteDialogOpen,
     onDeleteImage,
     onDeleteDialogClose,
-    onSaveDelete
-
-    
+    onSaveDelete,
   };
 };
 export default useImage;
