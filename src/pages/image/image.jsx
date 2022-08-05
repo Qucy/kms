@@ -14,9 +14,7 @@ import {
   DialogTitle,
   DialogContentText,
   Autocomplete,
-  Pagination,
   CircularProgress,
-  Grid,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import { saveAs } from 'file-saver';
@@ -24,7 +22,7 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useEffect } from 'react';
-import { API_IMAGE, API_TAG, API_IMAGETAGLINK } from '../../utils/api';
+import { API_IMAGETAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { imageSliceSelector } from '../../hooks/image/imageSlice';
@@ -33,6 +31,7 @@ import ImageDialog from './imageDialog';
 
 // function component for image list
 export default function TitlebarImageList() {
+  const imageSource = useSelector(imageSliceSelector.imageSource);
   const allTagList = useSelector(tagSliceSelector.allTagList);
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
   const tableStatus = useSelector(imageSliceSelector.tableStatus);
@@ -42,11 +41,6 @@ export default function TitlebarImageList() {
   const dispatch = useDispatch();
 
   const {
-    // pageNumber,
-    // onPaginate,
-    // onLastImageScroll,
-    // refetchImageList,
-    // pageCount,
     getFilteredImage,
     isReachedMaxImages,
     getPaginatedImage,
@@ -64,6 +58,9 @@ export default function TitlebarImageList() {
   const observer = React.useRef();
   const lastImageRef = React.useCallback(
     (node) => {
+      //TODOs
+      //include a variable to define which API to call, whether it's a search result or a normal image list
+
       if (tableStatus === 'LOADING') return;
       if (observer.current) observer.current.disconnect();
 
@@ -82,25 +79,6 @@ export default function TitlebarImageList() {
   const [detail, setDetail] = React.useState(false);
 
   useEffect(() => {
-    // const fetchAllTags = async () => {
-    //   try {
-    //     const response = await API_TAG.getAllTags();
-    //     if (response.status === 200) {
-    //       dispatch(setAllTagList(response.data));
-    //     }
-    //     return response.data;
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-
-    // const initImage = async () => {
-    //   const allTags = await fetchAllTags();
-    //   getPaginatedImage(scrollPageNumber, allTags);
-    // };
-
-    // initImage();
-
     getPaginatedImage();
   }, []);
 
@@ -111,9 +89,9 @@ export default function TitlebarImageList() {
   // search function for image list
   const search = async (event, value) => {
     /* To be implemented */
-    const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value)
-    const image_names = image_name_res.data.map(a=> a.image_name)
-    getFilteredImage(image_names)
+    const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value);
+    const image_names = image_name_res.data.map((a) => a.image_name);
+    getFilteredImage(image_names);
   };
 
   // function open image dialog
