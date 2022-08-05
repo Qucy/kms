@@ -9,7 +9,6 @@ import {
   setButtonStatus,
 } from '../../hooks/image/imageSlice';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
-import { setAllTagList } from '../../hooks/tag/tagSlice';
 
 const useImage = () => {
   const allTagList = useSelector(tagSliceSelector.allTagList);
@@ -18,16 +17,12 @@ const useImage = () => {
   const dispatch = useDispatch();
 
   const [detail, setDetail] = React.useState(false);
-  // const [pageNumber, setPageNumber] = React.useState(0);
   const [isReachedMaxImages, setIsReachMaxImages] = React.useState(false);
-  // const pageCount = React.useRef(null);
   const imageCount = React.useRef(null);
 
   React.useEffect(() => {
     setIsReachMaxImages(allImageList.length === imageCount.current);
   }, [allImageList]);
-
-  // const onPaginate = (e, v) => setPageNumber(v ? v : 1);
 
   // image upload & edit dialog open & close control
   const [isDetailDialogOpen, setIsDetailDialogOpen] = React.useState(false);
@@ -79,43 +74,41 @@ const useImage = () => {
           }
         });
 
-          dispatch(setPaginatedImageList([...allImageList, ...allImage]));
-          dispatch(setTableStatus('SUCCESS'));
-        }
+        dispatch(setPaginatedImageList([...allImageList, ...allImage]));
+        dispatch(setTableStatus('SUCCESS'));
+      }
     } catch (error) {
       console.error(error);
     }
-  }; 
+  };
 
-    //function to retrieve all the images
-    const getFilteredImage = async (image_names) => {
-      dispatch(setTableStatus('LOADING'));
-  
-      try {
-        const response = await API_IMAGE.getFilteredImages(image_names);
-        if (response.status === 200) {
-          imageCount.current = response.data.count;
-          const allImage = response.data.results;  
-          const linkage_dict = await fetchTagDictbyImageName(image_names);
-  
-          allImage.forEach((e) => {
-            var image_tag_name = linkage_dict[e.image_name];
-            if (image_tag_name) {
-              e.tag = image_tag_name.join();
-            }
-          });
-            dispatch(setPaginatedImageList([allImage]));
-            dispatch(setTableStatus('SUCCESS'));
+  //function to retrieve all the images
+  const getFilteredImage = async (image_names) => {
+    dispatch(setTableStatus('LOADING'));
+
+    try {
+      const response = await API_IMAGE.getFilteredImages(image_names);
+      if (response.status === 200) {
+        imageCount.current = response.data.count;
+        const allImage = response.data.results;
+        const linkage_dict = await fetchTagDictbyImageName(image_names);
+
+        allImage.forEach((e) => {
+          var image_tag_name = linkage_dict[e.image_name];
+          if (image_tag_name) {
+            e.tag = image_tag_name.join();
           }
-      } catch (error) {
-        console.error(error);
+        });
+        dispatch(setPaginatedImageList([allImage]));
+        dispatch(setTableStatus('SUCCESS'));
       }
-    }; 
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const fetchTagDictbyImageName = async (image_names) => {
-    const link_response = await API_IMAGETAGLINK.getTagNamesbyImagesNames(
-      image_names
-    );
+    const link_response = await API_IMAGETAGLINK.getTagNamesbyImagesNames(image_names);
 
     if (link_response.status === 200) {
       const linkage_list = link_response.data.map((a) => [a.image_name, a.tag_name]);
@@ -131,25 +124,16 @@ const useImage = () => {
           linkage_dict[image_name] = [tag_name];
         }
       }
-      return linkage_dict
-    }
-  }
-
-  const fetchAllTags = async () => {
-    try {
-      const response = await API_TAG.getAllTags();
-      if (response.status === 200) {
-        dispatch(setAllTagList(response.data));
-      }
-      return response.data;
-    } catch (error) {
-      console.error(error);
+      return linkage_dict;
     }
   };
 
-  const initImage = async () => {
-    const allTags = await fetchAllTags();
-    getPaginatedImage(null, allTags);
+  const initImages = async () => {
+    //set loading
+    //set dataSource to DEFAULT
+    //fetch the first 10 images from the server
+    //adding tags to the images
+    //set success
   };
 
   // function to refresh image list
