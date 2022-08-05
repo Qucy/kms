@@ -24,7 +24,7 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useEffect } from 'react';
-import { API_IMAGE, API_TAG } from '../../utils/api';
+import { API_IMAGE, API_TAG, API_IMAGETAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { imageSliceSelector } from '../../hooks/image/imageSlice';
@@ -47,6 +47,7 @@ export default function TitlebarImageList() {
     // onLastImageScroll,
     // refetchImageList,
     // pageCount,
+    getFilteredImage,
     isReachedMaxImages,
     getPaginatedImage,
     isDetailDialogOpen,
@@ -100,16 +101,19 @@ export default function TitlebarImageList() {
 
     // initImage();
 
-    getPaginatedImage(scrollPageNumber, allTagList);
+    getPaginatedImage();
   }, []);
 
   React.useEffect(() => {
-    getPaginatedImage(scrollPageNumber, allTagList);
+    getPaginatedImage(scrollPageNumber);
   }, [scrollPageNumber]);
 
   // search function for image list
-  const search = (event, value) => {
+  const search = async (event, value) => {
     /* To be implemented */
+    const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value)
+    const image_names = image_name_res.data.map(a=> a.image_name)
+    getFilteredImage(image_names)
   };
 
   // function open image dialog
@@ -162,7 +166,7 @@ export default function TitlebarImageList() {
         </Button>
       </Stack>
       <Stack>
-        <ImageList sx={{ height: 200 }} cols={5}>
+        <ImageList sx={{ height: 600 }} cols={4}>
           {/* Loop all the images */}
 
           {allImageList.map((item, index) => (

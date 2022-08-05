@@ -37,6 +37,14 @@ export const API_IMAGE = {
     return fetchRequest(config);
   },
 
+  getFilteredImages: async (image_names = '') => {
+    const config = {
+      method: 'get',
+      url: `/image/?image_names=${image_names}`
+    };
+    return fetchRequest(config);
+  },
+
   deleteImage: async (id) => {
     const config = {
       method: 'delete',
@@ -103,6 +111,14 @@ export const API_IMAGETAGLINK = {
     const config = {
       method: 'get',
       url: `/image-tag-link/?image_names=${image_names}`
+    };
+    return fetchRequest(config);
+  },
+
+  getImagesNamesbyTagName: async (tag_name = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?tag_name=${tag_name}`
     };
     return fetchRequest(config);
   },
