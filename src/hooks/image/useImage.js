@@ -55,7 +55,7 @@ const useImage = () => {
   };
 
   //function to retrieve all the images
-  const getPaginatedImage = async (pageNumber = 1, alltags = allTagList) => {
+  const getPaginatedImage = async (pageNumber = 1) => {
     dispatch(setTableStatus('LOADING'));
 
     try {
@@ -64,17 +64,9 @@ const useImage = () => {
         imageCount.current = response.data.count;
         const allImage = response.data.results;
         const image_names = allImage.map((a) => a.image_name);
+        const imagesWithTag = await getImagesWithTag(allImage, image_names);
 
-        const linkage_dict = await fetchTagDictbyImageName(image_names);
-
-        allImage.forEach((e) => {
-          var image_tag_name = linkage_dict[e.image_name];
-          if (image_tag_name) {
-            e.tag = image_tag_name.join();
-          }
-        });
-
-        dispatch(setPaginatedImageList([...allImageList, ...allImage]));
+        dispatch(setPaginatedImageList([...allImageList, ...imagesWithTag]));
         dispatch(setTableStatus('SUCCESS'));
       }
     } catch (error) {
@@ -91,15 +83,9 @@ const useImage = () => {
       if (response.status === 200) {
         imageCount.current = response.data.count;
         const allImage = response.data.results;
-        const linkage_dict = await fetchTagDictbyImageName(image_names);
+        const imagesWithTag = await getImagesWithTag(allImage, image_names);
 
-        allImage.forEach((e) => {
-          var image_tag_name = linkage_dict[e.image_name];
-          if (image_tag_name) {
-            e.tag = image_tag_name.join();
-          }
-        });
-        dispatch(setPaginatedImageList([allImage]));
+        dispatch(setPaginatedImageList([...imagesWithTag]));
         dispatch(setTableStatus('SUCCESS'));
       }
     } catch (error) {
@@ -107,7 +93,24 @@ const useImage = () => {
     }
   };
 
-  const fetchTagDictbyImageName = async (image_names) => {
+  const initImages = async (pageNumber) => {
+    //set loading
+    dispatch(setTableStatus('LOADING'));
+    const response = await API_IMAGE.getPaginatedImages(pageNumber);
+
+    //set dataSource to DEFAULT
+    //fetch the first 10 images from the server
+    //adding tags to the images
+    //set success
+  };
+
+  /**
+   * function to get related tags of each image
+   * @param {Array} image_names array of image names
+   * @returns {Object} return an object in which the key is the image name and value is an array of related tags
+   */
+
+  const getTagDictByImageNames = async (image_names) => {
     const link_response = await API_IMAGETAGLINK.getTagNamesbyImagesNames(image_names);
 
     if (link_response.status === 200) {
@@ -124,16 +127,27 @@ const useImage = () => {
           linkage_dict[image_name] = [tag_name];
         }
       }
+      console.log(linkage_dict);
       return linkage_dict;
     }
   };
 
-  const initImages = async () => {
-    //set loading
-    //set dataSource to DEFAULT
-    //fetch the first 10 images from the server
-    //adding tags to the images
-    //set success
+  /**
+   * function to add tags into each of the image inside an array
+   * @param {Array} imagesList image list fetched from API.IMAGE_getPaginatedImages
+   * @return {Array} return an image list with tags attached
+   */
+  const getImagesWithTag = async (allImage, imageNames) => {
+    const linkage_dict = await getTagDictByImageNames(imageNames);
+
+    allImage.forEach((e) => {
+      const image_tag_name = linkage_dict[e.image_name];
+      if (image_tag_name) {
+        e.tag = image_tag_name.join();
+      }
+    });
+
+    return allImage;
   };
 
   // function to refresh image list
@@ -167,8 +181,6 @@ const useImage = () => {
   };
 
   return {
-    // pageNumber,
-    // onPaginate,
     refetchImageList,
 
     imageCount,
