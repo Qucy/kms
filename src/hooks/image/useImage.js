@@ -168,7 +168,7 @@ const useImage = () => {
       try {
         const response = await API_IMAGE.deleteImage(id);
 
-        if (response.status === 200) {
+        if (response.status === 204) {
           dispatch(setButtonStatus('SUCCESS'));
           setTimeout(onDeleteDialogClose, 1000);
           callback && setTimeout(callback, 1000);

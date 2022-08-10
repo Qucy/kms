@@ -25,12 +25,17 @@ import { useEffect } from 'react';
 import { API_IMAGETAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
-import { imageSliceSelector, setImageSource } from '../../hooks/image/imageSlice';
+import {
+  imageSliceSelector,
+  setImageSource,
+  setScrollPageNumber,
+} from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
 
 // function component for image list
 export default function TitlebarImageList() {
+  const scrollPageNumber = useSelector(imageSliceSelector.scrollPageNumber);
   const imageSource = useSelector(imageSliceSelector.imageSource);
   const allTagList = useSelector(tagSliceSelector.allTagList);
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
@@ -53,8 +58,6 @@ export default function TitlebarImageList() {
     onSaveDelete,
   } = useImage();
 
-  const [scrollPageNumber, setScrollPageNumber] = React.useState(1);
-
   const observer = React.useRef();
 
   const lastImageRef = React.useCallback(
@@ -67,13 +70,14 @@ export default function TitlebarImageList() {
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !isReachedMaxImages) {
-          setScrollPageNumber((_prevState) => _prevState + 1);
+          dispatch(setScrollPageNumber());
+          console.log('entered');
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [tableStatus, isReachedMaxImages]
+    [tableStatus, isReachedMaxImages, dispatch]
   );
 
   const [detail, setDetail] = React.useState(false);
@@ -83,14 +87,18 @@ export default function TitlebarImageList() {
   }, []);
 
   React.useEffect(() => {
-    getPaginatedImage(scrollPageNumber);
+    imageSource !== 'SEARCH' && getPaginatedImage(scrollPageNumber);
   }, [scrollPageNumber]);
+
+  React.useEffect(() => console.log(scrollPageNumber), [scrollPageNumber]);
 
   // search function for image list
   const onSearch = async (event, value) => {
-    /* To be implemented */
-    console.log(value);
-    dispatch(setImageSource('SEARCH'));
+    (Array.isArray(value) && value.length) === 0
+      ? dispatch(setImageSource('DEFAULT'))
+      : dispatch(setImageSource('SEARCH'));
+
+    dispatch(setScrollPageNumber());
 
     const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value);
     const image_names = image_name_res.data.map((a) => a.image_name);
@@ -149,7 +157,7 @@ export default function TitlebarImageList() {
         </Button>
       </Stack>
       <Stack>
-        <ImageList sx={{ height: 600 }} cols={4}>
+        <ImageList sx={{ height: 300 }} cols={4}>
           {/* Loop all the images */}
 
           {allImageList.map((item, index) => (

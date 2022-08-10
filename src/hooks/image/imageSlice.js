@@ -4,6 +4,7 @@ const initalImageState = {
   imageSource: 'DEFAULT',
   paginatedImageList: [],
   imageObject: {},
+  scrollPageNumber: 1,
   tableStatus: 'LOADING',
   buttonStatus: '',
 };
@@ -21,6 +22,9 @@ export const imageSlice = createSlice({
     setImageObject: (state, action) => {
       state.imageObject = action.payload;
     },
+    setScrollPageNumber: (state) => {
+      state.scrollPageNumber++;
+    },
     setTableStatus: (state, action) => {
       state.tableStatus = action.payload;
     },
@@ -34,6 +38,7 @@ export const {
   setImageSource,
   setPaginatedImageList,
   setImageObject,
+  setScrollPageNumber,
   setTableStatus,
   setButtonStatus,
 } = imageSlice.actions;
@@ -42,6 +47,7 @@ export const imageSliceSelector = {
   imageSource: (state) => state.image.imageSource,
   paginatedImageList: (state) => state.image.paginatedImageList,
   imageObject: (state) => state.image.imageObject,
+  scrollPageNumber: (state) => state.image.scrollPageNumber,
   tableStatus: (state) => state.image.tableStatus,
   buttonStatus: (state) => state.image.buttonStatus,
 };
