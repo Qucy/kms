@@ -77,13 +77,14 @@ const useImage = () => {
   //function to retrieve all the images
   const getFilteredImage = async (image_names) => {
     dispatch(setTableStatus('LOADING'));
+    const imageNamesStr = image_names.toString();
 
     try {
-      const response = await API_IMAGE.getFilteredImages(image_names);
+      const response = await API_IMAGE.getFilteredImages(imageNamesStr);
       if (response.status === 200) {
         imageCount.current = response.data.count;
         const allImage = response.data.results;
-        const imagesWithTag = await getImagesWithTag(allImage, image_names);
+        const imagesWithTag = await getImagesWithTag(allImage, imageNamesStr);
 
         dispatch(setPaginatedImageList([...imagesWithTag]));
         dispatch(setTableStatus('SUCCESS'));
@@ -127,14 +128,14 @@ const useImage = () => {
           linkage_dict[image_name] = [tag_name];
         }
       }
-      console.log(linkage_dict);
       return linkage_dict;
     }
   };
 
   /**
    * function to add tags into each of the image inside an array
-   * @param {Array} imagesList image list fetched from API.IMAGE_getPaginatedImages
+   * @param {Array} allImage image list fetched from API.IMAGE_getPaginatedImages
+   * @param {Array} imageNames array of image names
    * @return {Array} return an image list with tags attached
    */
   const getImagesWithTag = async (allImage, imageNames) => {

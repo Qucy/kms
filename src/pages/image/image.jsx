@@ -25,7 +25,7 @@ import { useEffect } from 'react';
 import { API_IMAGETAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
-import { imageSliceSelector } from '../../hooks/image/imageSlice';
+import { imageSliceSelector, setImageSource } from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
 
@@ -56,6 +56,7 @@ export default function TitlebarImageList() {
   const [scrollPageNumber, setScrollPageNumber] = React.useState(1);
 
   const observer = React.useRef();
+
   const lastImageRef = React.useCallback(
     (node) => {
       //TODOs
@@ -66,7 +67,6 @@ export default function TitlebarImageList() {
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !isReachedMaxImages) {
-          console.log(`Visible`);
           setScrollPageNumber((_prevState) => _prevState + 1);
         }
       });
@@ -87,12 +87,17 @@ export default function TitlebarImageList() {
   }, [scrollPageNumber]);
 
   // search function for image list
-  const search = async (event, value) => {
+  const onSearch = async (event, value) => {
     /* To be implemented */
+    console.log(value);
+    dispatch(setImageSource('SEARCH'));
+
     const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value);
     const image_names = image_name_res.data.map((a) => a.image_name);
     getFilteredImage(image_names);
   };
+
+  React.useEffect(() => console.log(imageSource), [imageSource]);
 
   // function open image dialog
   const openDetailDialog = (item) => {
@@ -124,7 +129,7 @@ export default function TitlebarImageList() {
       {/* Search component */}
       <Stack spacing={3} direction='row' justifyContent='space-between'>
         <Autocomplete
-          onChange={search}
+          onChange={onSearch}
           sx={{ width: 500 }}
           multiple
           id='tags-standard'
