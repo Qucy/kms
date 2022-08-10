@@ -70,14 +70,14 @@ export default function TitlebarImageList() {
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !isReachedMaxImages) {
-          dispatch(setScrollPageNumber());
+          dispatch(setScrollPageNumber(scrollPageNumber + 1));
           console.log('entered');
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [tableStatus, isReachedMaxImages, dispatch]
+    [tableStatus, isReachedMaxImages, dispatch, scrollPageNumber]
   );
 
   const [detail, setDetail] = React.useState(false);
@@ -88,7 +88,7 @@ export default function TitlebarImageList() {
 
   React.useEffect(() => {
     imageSource !== 'SEARCH' && getPaginatedImage(scrollPageNumber);
-  }, [scrollPageNumber]);
+  }, [scrollPageNumber, imageSource]);
 
   React.useEffect(() => console.log(scrollPageNumber), [scrollPageNumber]);
 
@@ -98,7 +98,7 @@ export default function TitlebarImageList() {
       ? dispatch(setImageSource('DEFAULT'))
       : dispatch(setImageSource('SEARCH'));
 
-    dispatch(setScrollPageNumber());
+    dispatch(setScrollPageNumber(1));
 
     const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value);
     const image_names = image_name_res.data.map((a) => a.image_name);
@@ -159,55 +159,55 @@ export default function TitlebarImageList() {
       <Stack>
         <ImageList sx={{ height: 300 }} cols={4}>
           {/* Loop all the images */}
-
-          {allImageList.map((item, index) => (
-            <ImageListItem
-              key={index}
-              ref={index + 1 === allImageList.length ? lastImageRef : null}
-            >
-              <img
-                src={`data:image/jpeg;base64,${item.img}`}
-                alt={item.image_name}
-                loading='lazy'
-              />
-              <ImageListItemBar
-                title={item.image_name}
-                subtitle={item.tag}
-                actionIcon={
-                  <>
-                    {/* edit icon  */}
-                    <IconButton
-                      onClick={() => {
-                        return openDetailDialog(item);
-                      }}
-                      sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                      aria-label={`update ${item.image_name}`}
-                    >
-                      <BorderColorIcon />
-                    </IconButton>
-                    {/* download icon  */}
-                    <IconButton
-                      onClick={() => {
-                        return downloadImage(item);
-                      }}
-                      sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                      aria-label={`update ${item.image_name}`}
-                    >
-                      <ArchiveIcon />
-                    </IconButton>
-                    {/* delete icon  */}
-                    <IconButton
-                      onClick={(e) => onDeleteImage(e, item)}
-                      sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                      aria-label={`update ${item.image_name}`}
-                    >
-                      <DeleteOutlinedIcon />
-                    </IconButton>
-                  </>
-                }
-              />
-            </ImageListItem>
-          ))}
+          {tableStatus !== 'LOADING' &&
+            allImageList.map((item, index) => (
+              <ImageListItem
+                key={index}
+                ref={index + 1 === allImageList.length ? lastImageRef : null}
+              >
+                <img
+                  src={`data:image/jpeg;base64,${item.img}`}
+                  alt={item.image_name}
+                  loading='lazy'
+                />
+                <ImageListItemBar
+                  title={item.image_name}
+                  subtitle={item.tag}
+                  actionIcon={
+                    <>
+                      {/* edit icon  */}
+                      <IconButton
+                        onClick={() => {
+                          return openDetailDialog(item);
+                        }}
+                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                        aria-label={`update ${item.image_name}`}
+                      >
+                        <BorderColorIcon />
+                      </IconButton>
+                      {/* download icon  */}
+                      <IconButton
+                        onClick={() => {
+                          return downloadImage(item);
+                        }}
+                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                        aria-label={`update ${item.image_name}`}
+                      >
+                        <ArchiveIcon />
+                      </IconButton>
+                      {/* delete icon  */}
+                      <IconButton
+                        onClick={(e) => onDeleteImage(e, item)}
+                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                        aria-label={`update ${item.image_name}`}
+                      >
+                        <DeleteOutlinedIcon />
+                      </IconButton>
+                    </>
+                  }
+                />
+              </ImageListItem>
+            ))}
           {tableStatus === 'LOADING' && (
             <Stack
               alignItems='center'

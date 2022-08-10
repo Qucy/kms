@@ -22,8 +22,8 @@ export const imageSlice = createSlice({
     setImageObject: (state, action) => {
       state.imageObject = action.payload;
     },
-    setScrollPageNumber: (state) => {
-      state.scrollPageNumber++;
+    setScrollPageNumber: (state, action) => {
+      state.scrollPageNumber = action.payload;
     },
     setTableStatus: (state, action) => {
       state.tableStatus = action.payload;

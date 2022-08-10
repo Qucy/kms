@@ -16,9 +16,10 @@ import { imageSliceSelector } from '../../hooks/image/imageSlice';
 
 // image dialog
 function ImageDialog(props) {
-
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
   const { detail, isDetailDialogOpen, onDetailDialogClose } = props;
+
+  const { refetchImageList } = useImage();
 
   // set image dialog title according to title has value or not
   const title = detail.image_name === undefined ? 'Upload' : 'Edit';
@@ -105,7 +106,7 @@ function ImageDialog(props) {
 
   // update function
   const onUpdate = async () => {
-    console.log(detail)
+    console.log(detail);
     const image_name = detail.image_name;
 
     // delete tags
@@ -123,6 +124,7 @@ function ImageDialog(props) {
 
     // close dialog
     onDetailDialogClose();
+    refetchImageList();
   };
 
   if (title === 'Upload') {

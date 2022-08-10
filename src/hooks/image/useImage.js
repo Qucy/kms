@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { API_IMAGE, API_IMAGETAGLINK, API_TAG } from '../../utils/api';
-import { imageSliceSelector } from '../../hooks/image/imageSlice';
+import imageSlice, {
+  imageSliceSelector,
+  setScrollPageNumber,
+} from '../../hooks/image/imageSlice';
 import {
   setPaginatedImageList,
   setTableStatus,
@@ -13,6 +16,7 @@ import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 const useImage = () => {
   const allTagList = useSelector(tagSliceSelector.allTagList);
   const allImageList = useSelector(imageSliceSelector.paginatedImageList);
+  const scrollPageNumber = useSelector(imageSliceSelector.scrollPageNumber);
 
   const dispatch = useDispatch();
 
@@ -152,13 +156,11 @@ const useImage = () => {
   };
 
   // function to refresh image list
-  const refetchImageList = React.useCallback(
-    async (pageNumber) => {
-      dispatch(setTableStatus('LOADING'));
-      getPaginatedImage(pageNumber);
-    },
-    [allTagList]
-  );
+  const refetchImageList = React.useCallback(async (pageNumber) => {
+    dispatch(setTableStatus('LOADING'));
+    dispatch(setScrollPageNumber(1));
+    getPaginatedImage(pageNumber);
+  }, []);
 
   // function to delete image
   const onSaveDelete = (e, t) => {
@@ -170,8 +172,8 @@ const useImage = () => {
 
         if (response.status === 204) {
           dispatch(setButtonStatus('SUCCESS'));
-          setTimeout(onDeleteDialogClose, 1000);
-          callback && setTimeout(callback, 1000);
+          onDeleteDialogClose();
+          callback && setTimeout(callback(), 3000);
         }
       } catch (error) {
         console.error(error);
