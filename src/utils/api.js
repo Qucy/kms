@@ -132,4 +132,12 @@ export const API_IMAGETAGLINK = {
     };
     return fetchRequest(config);
   },
+  updateTagNames: async (payload) => {
+    const config = {
+      method: 'patch',
+      url: `image-tag-link/update_tag_name/`,
+      data: payload,
+    };
+    return fetchRequest(config);
+  },
 };
