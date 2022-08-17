@@ -186,12 +186,23 @@ export default function Campaign() {
                     alt='green iguana'
                   />
                   <CardContent>
-                    <Typography variant='h6' component='div'>
-                      {d.company}
-                    </Typography>
-                    <Typography variant='caption' color='text.secondary'>
-                      {d.message_type}
-                    </Typography>
+                    <Stack direction='row' justifyContent='space-between'>
+                      <div>
+                        <Typography variant='h6' component='div'>
+                          {d.company}
+                        </Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                          {d.message_type}
+                        </Typography>
+                      </div>
+                      <Typography
+                        variant='subtitle2'
+                        component='div'
+                        sx={{ color: '#2196f3' }}
+                      >
+                        {d.response_rate}
+                      </Typography>
+                    </Stack>
                   </CardContent>
                 </CardActionArea>
               </Card>
