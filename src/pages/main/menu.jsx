@@ -70,6 +70,12 @@ export default function Menu(props) {
       <Divider />
       <List component='nav'>
         <React.Fragment>
+          <ListItemButton component={NavLink} to='/main/campaign'>
+            <ListItemIcon>
+              <FolderOpenOutlinedIcon />
+            </ListItemIcon>
+            <ListItemText primary='Campaign' />
+          </ListItemButton>
           <ListItemButton component={NavLink} to='/main/image'>
             <ListItemIcon>
               <InsertPhotoOutlinedIcon />
@@ -87,12 +93,6 @@ export default function Menu(props) {
               <TagOutlinedIcon />
             </ListItemIcon>
             <ListItemText primary='Hash tags' />
-          </ListItemButton>
-          <ListItemButton component={NavLink} to='/main/campaign'>
-            <ListItemIcon>
-              <FolderOpenOutlinedIcon />
-            </ListItemIcon>
-            <ListItemText primary='Campaign' />
           </ListItemButton>
         </React.Fragment>
       </List>
