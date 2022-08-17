@@ -58,6 +58,33 @@ export const API_IMAGE = {
     };
     return fetchImageRequest(config);
   },
+  getImageByCampaignId: async (id) => {
+    const config = {
+      method: 'get',
+      url: `/image/?campaign_id=${id}`,
+    };
+    return fetchImageRequest(config);
+  },
+};
+
+export const API_CAMPAIGN = {
+  getAllCampaigns: async () => {
+    const config = {
+      method: 'get',
+      url: `campaign/`,
+    };
+    return fetchRequest(config);
+  },
+};
+
+export const API_CAMPAIGNTAGLINK = {
+  getTagsByCampaignId: async (id) => {
+    const config = {
+      method: 'get',
+      url: `campaign-tag-linkage/?campaign_id=${id}`,
+    };
+    return fetchRequest(config);
+  },
 };
 
 // tag module api
