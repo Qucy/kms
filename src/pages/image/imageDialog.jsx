@@ -22,7 +22,7 @@ function ImageDialog(props) {
   const { refetchImageList } = useImage();
 
   // set image dialog title according to title has value or not
-  const title = detail.image_name === undefined ? 'Upload' : 'Edit';
+  const title = detail.image_name === undefined ? 'Upload' : 'Image Details';
   // create 2 states and 2 update functions to store and preview selected images
   const [selectedImages, setSelectedImages] = React.useState();
   const [previews, setPreview] = React.useState();
@@ -196,11 +196,6 @@ function ImageDialog(props) {
             disabled
             defaultValue={detail.image_name}
           />
-          <KMSImageList
-            oldTags={detail.tag}
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-          />
           <TextField
             autoFocus
             margin='dense'
@@ -243,8 +238,7 @@ function ImageDialog(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onDetailDialogClose}>Cancel</Button>
-          <Button onClick={onUpdate}>Save</Button>
+          <Button onClick={onDetailDialogClose}>Close</Button>
         </DialogActions>
       </Dialog>
     );

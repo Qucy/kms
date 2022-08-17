@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { API_IMAGE, API_IMAGETAGLINK, API_TAG } from '../../utils/api';
+import { API_IMAGE, API_IMAGETAGLINK, API_TAG,API_CAMPAIGNTAGLINK } from '../../utils/api';
 import imageSlice, {
   imageSliceSelector,
   setScrollPageNumber,
@@ -67,10 +67,11 @@ const useImage = () => {
       if (response.status === 200) {
         imageCount.current = response.data.count;
         const allImage = response.data.results;
-        const image_names = allImage.map((a) => a.image_name);
-        const imagesWithTag = await getImagesWithTag(allImage, image_names);
+        const campaign_id = allImage.map((a) => a.campaign_id);
+        console.log(allImage)
+        // const imagesWithTag = await getImagesWithTag(allImage, campaign_id);
 
-        dispatch(setPaginatedImageList([...allImageList, ...imagesWithTag]));
+        dispatch(setPaginatedImageList([...allImageList, ...allImage]));
         dispatch(setTableStatus('SUCCESS'));
       }
     } catch (error) {
@@ -90,7 +91,7 @@ const useImage = () => {
         const allImage = response.data.results;
         const imagesWithTag = await getImagesWithTag(allImage, imageNamesStr);
 
-        dispatch(setPaginatedImageList([...imagesWithTag]));
+        dispatch(setPaginatedImageList([...allImage]));
         dispatch(setTableStatus('SUCCESS'));
       }
     } catch (error) {
@@ -115,8 +116,8 @@ const useImage = () => {
    * @returns {Object} return an object in which the key is the image name and value is an array of related tags
    */
 
-  const getTagDictByImageNames = async (image_names) => {
-    const link_response = await API_IMAGETAGLINK.getTagNamesbyImagesNames(image_names);
+  const getTagDictByCampaignId = async (camapign_ids) => {
+    const link_response = await API_CAMPAIGNTAGLINK.getAllCampaignTagLink();
 
     if (link_response.status === 200) {
       const linkage_list = link_response.data.map((a) => [a.image_name, a.tag_name]);
@@ -142,8 +143,8 @@ const useImage = () => {
    * @param {Array} imageNames array of image names
    * @return {Array} return an image list with tags attached
    */
-  const getImagesWithTag = async (allImage, imageNames) => {
-    const linkage_dict = await getTagDictByImageNames(imageNames);
+  const getImagesWithTag = async (allImage, campaign_ids) => {
+    const linkage_dict = await getTagDictByCampaignId(campaign_ids);
 
     allImage.forEach((e) => {
       const image_tag_name = linkage_dict[e.image_name];

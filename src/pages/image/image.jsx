@@ -152,12 +152,9 @@ export default function TitlebarImageList() {
             />
           )}
         />
-        <Button variant='contained' onClick={openDetailDialog}>
-          UPLOAD
-        </Button>
       </Stack>
       <Stack>
-        <ImageList sx={{ height: 600 }} cols={4}>
+        <ImageList sx={{ height: 600 }}  cols={4}>
           {/* Loop all the images */}
           {tableStatus !== 'LOADING' &&
             allImageList.map((item, index) => (
@@ -194,14 +191,6 @@ export default function TitlebarImageList() {
                         aria-label={`update ${item.image_name}`}
                       >
                         <ArchiveIcon />
-                      </IconButton>
-                      {/* delete icon  */}
-                      <IconButton
-                        onClick={(e) => onDeleteImage(e, item)}
-                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                        aria-label={`update ${item.image_name}`}
-                      >
-                        <DeleteOutlinedIcon />
                       </IconButton>
                     </>
                   }

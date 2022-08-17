@@ -102,6 +102,26 @@ export const API_TAG = {
 };
 
 // ImageTagLink API
+export const API_CAMPAIGNTAGLINK = {
+  getAllCampaignTagLink: async () => {
+    const config = {
+      method: 'get',
+      url: `/campaign-tag-linkage/`,
+    };
+    return fetchRequest(config);
+  },
+  getTagNamesbycampaignID: async (campaign_id = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?campaign_id=${campaign_id}`,
+    };
+    return fetchRequest(config);
+  }
+}
+
+
+
+// ImageTagLink API
 export const API_IMAGETAGLINK = {
   getTagNamesbyImagesNames: async (image_names = '') => {
     const config = {
