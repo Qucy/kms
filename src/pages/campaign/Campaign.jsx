@@ -9,6 +9,8 @@ import {
   Drawer,
   Box,
   IconButton,
+  Chip,
+  styled,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,7 +20,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 
 import Title from '../main/title';
-import { IconLabel } from '../../components/common/index';
+import { IconLabel, CampaignCard } from '../../components/common/index';
 
 const dummyData = [
   {
@@ -145,12 +147,7 @@ export default function Campaign() {
                     })
                   }
                 >
-                  <CardMedia
-                    component='img'
-                    height='140'
-                    src={d.image}
-                    alt='green iguana'
-                  />
+                  <CardMedia component='img' src={d.image} alt='green iguana' />
                   <CardContent>
                     <Typography gutterBottom variant='h6' component='div'>
                       {d.company}
@@ -163,42 +160,56 @@ export default function Campaign() {
               </Card>
             </Grid>
           ))}
+          {/* {dummyData.map((d, i) => (
+            <Grid item xs={1} md={2} lg={2} key={i}>
+              <CampaignCard />
+            </Grid>
+          ))} */}
         </Grid>
       </Stack>
-      <Drawer anchor='right' open={isDetailDrawerOpen}>
-        <Box sx={{ width: 750, py: 12, px: 3 }}>
+      <Drawer anchor='right' open={isDetailDrawerOpen} sx={{ zIndex: 2 }}>
+        <Box sx={{ width: 700, py: 12, px: 3 }}>
           <Stack direction='row' justifyContent='space-between' alignItems='items-center'>
             <Typography variant='h4'>{campaignDetail.company}</Typography>
             <IconButton aria-label='close' color='primary' onClick={onDrawerClose}>
               <CloseIcon />
             </IconButton>
           </Stack>
-          <Grid container>
-            <Grid items xs={2}>
+          <Grid container sx={{ py: 0.5 }}>
+            <Grid item xs={2}>
               <IconLabel
                 icon={<PlaceOutlinedIcon fontSize='small' />}
                 label={campaignDetail.location}
               />
             </Grid>
-            <Grid items xs={2}>
+            <Grid item xs={2}>
               <IconLabel
                 icon={<AccountBalanceOutlinedIcon fontSize='small' />}
                 label={campaignDetail.classification}
               />
             </Grid>
-            <Grid items xs={2}>
+            <Grid item xs={2.25}>
               <IconLabel
                 icon={<InfoOutlinedIcon fontSize='small' />}
-                label={campaignDetail.classification}
+                label={campaignDetail.messageType}
               />
             </Grid>
-            <Grid items xs={6}>
+            <Grid item xs={5.75}>
               <IconLabel
                 icon={<CalendarMonthOutlinedIcon fontSize='small' />}
                 label={`Last Updated: August 17, 2022`}
               />
             </Grid>
           </Grid>
+          <Stack direction='row' justifyContent='flex-start' alignItems='items-center'>
+            {campaignDetail?.tag?.map((t, i) => (
+              <Chip
+                label={`#${t.toLowerCase()}`}
+                size='small'
+                sx={{ px: 0.5, mr: 0.5 }}
+              />
+            ))}
+          </Stack>
         </Box>
       </Drawer>
     </React.Fragment>
