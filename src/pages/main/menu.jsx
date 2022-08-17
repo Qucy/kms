@@ -1,17 +1,25 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ImageIcon from '@mui/icons-material/Image';
-import NumbersIcon from '@mui/icons-material/Numbers';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import MuiDrawer from '@mui/material/Drawer';
-import Toolbar from '@mui/material/Toolbar';
-import {NavLink} from 'react-router-dom'
+import {
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  List,
+  Divider,
+  IconButton,
+  Toolbar,
+} from '@mui/material';
+import {
+  Image as ImageIcon,
+  Numbers as NumbersIcon,
+  ChevronLeft as ChevronLeftIcon,
+} from '@mui/icons-material';
+
+import InsertPhotoOutlinedIcon from '@mui/icons-material/InsertPhotoOutlined';
+import TagOutlinedIcon from '@mui/icons-material/TagOutlined';
+import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 
 //import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
@@ -40,14 +48,13 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         },
       }),
     },
-  }),
+  })
 );
 
-
 export default function Menu(props) {
-  const {open, toggleDrawer} = props
+  const { open, toggleDrawer } = props;
   return (
-    <Drawer variant="permanent" open={open}>
+    <Drawer variant='permanent' open={open}>
       <Toolbar
         sx={{
           display: 'flex',
@@ -61,28 +68,34 @@ export default function Menu(props) {
         </IconButton>
       </Toolbar>
       <Divider />
-      <List component="nav">
+      <List component='nav'>
         <React.Fragment>
-          <ListItemButton component={NavLink} to='/main/image' >
+          <ListItemButton component={NavLink} to='/main/image'>
             <ListItemIcon>
-              <ImageIcon />
+              <InsertPhotoOutlinedIcon />
             </ListItemIcon>
-            <ListItemText primary="Images" />
+            <ListItemText primary='Images' />
           </ListItemButton>
-          { /* <ListItemButton component={NavLink} to='/main/document'>
+          {/* <ListItemButton component={NavLink} to='/main/document'>
             <ListItemIcon>
               <LibraryBooksIcon />
             </ListItemIcon>
             <ListItemText primary="Documents" />
-           </ListItemButton> */ }
+           </ListItemButton> */}
           <ListItemButton component={NavLink} to='/main/tag'>
             <ListItemIcon>
-              <NumbersIcon />
+              <TagOutlinedIcon />
             </ListItemIcon>
-            <ListItemText primary="Hash tags" />
+            <ListItemText primary='Hash tags' />
+          </ListItemButton>
+          <ListItemButton component={NavLink} to='/main/campaign'>
+            <ListItemIcon>
+              <FolderOpenOutlinedIcon />
+            </ListItemIcon>
+            <ListItemText primary='Campaign' />
           </ListItemButton>
         </React.Fragment>
       </List>
     </Drawer>
-  )
+  );
 }
