@@ -185,34 +185,14 @@ export default function Campaign() {
                     src={`data:image/jpeg;base64,${d.img}`}
                     alt='green iguana'
                   />
-                  <Box
-                    sx={{ width: '100%', height: '100%', backgroundColor: 'black' }}
-                  ></Box>
-                  <Typography
-                    variant='h6'
-                    component='div'
-                    sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      p: 1,
-                    }}
-                  >
-                    {d.company}
-                  </Typography>
-                  <Typography
-                    variant='overline'
-                    color='text.secondary'
-                    component='div'
-                    sx={{
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      p: 1,
-                    }}
-                  >
-                    {d.message_type}
-                  </Typography>
+                  <CardContent>
+                    <Typography variant='h6' component='div'>
+                      {d.company}
+                    </Typography>
+                    <Typography variant='caption' color='text.secondary'>
+                      {d.message_type}
+                    </Typography>
+                  </CardContent>
                 </CardActionArea>
               </Card>
             </Grid>
