@@ -58,8 +58,6 @@ export default function CampaignDrawer({ campaignDetail, open, onClose }) {
     fetchTag(campaignId);
   }, [campaignId]);
 
-  React.useEffect(() => console.log(images), [images]);
-
   return (
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
       <Box sx={{ width: 750, py: 12, px: 3 }}>
@@ -113,6 +111,7 @@ export default function CampaignDrawer({ campaignDetail, open, onClose }) {
           {!isTagLoading &&
             tags.map((t, i) => (
               <Chip
+                key={i}
                 label={`#${t.tag_name.toLowerCase()}`}
                 size='small'
                 sx={{ px: 0.5, mr: 0.5 }}
@@ -135,6 +134,7 @@ export default function CampaignDrawer({ campaignDetail, open, onClose }) {
                 src={`data:image/jpeg;base64,${image.img}`}
                 alt={image.image_name}
                 loading='lazy'
+                key={i}
               />
             ))}
         </Stack>
