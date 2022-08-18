@@ -27,7 +27,7 @@ import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
-import { API_CAMPAIGN } from '../../utils/api';
+import { API_CAMPAIGN, API_CAMPAIGNTAGLINK, API_IMAGE } from '../../utils/api';
 import CampaignDrawer from './CampaignDrawer';
 
 export default function Campaign() {
@@ -41,8 +41,10 @@ export default function Campaign() {
     messageType: '',
     responseRate: 0,
   });
+
   const [uploadedImages, setUploadedImages] = React.useState();
   const [imagePreview, setImagePreview] = React.useState();
+  const [selectedTags, setSelectedTags] = React.useState();
 
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -87,20 +89,64 @@ export default function Campaign() {
   }, [uploadedImages]);
 
   const onSaveNewCampaign = async () => {
-    const payload = {
-      company: newCampaign.companyName,
-      hsbc_vs_non_hsbc: newCampaign.classification,
-      location: newCampaign.location,
-      response_rate: newCampaign.responseRate,
-      message_type: newCampaign.messageType,
-      file: uploadedImages[0],
+    const createCampaign = async () => {
+      const payload = {
+        company: newCampaign.companyName,
+        hsbc_vs_non_hsbc: newCampaign.classification,
+        location: newCampaign.location,
+        response_rate: newCampaign.responseRate,
+        message_type: newCampaign.messageType,
+        //thumbnail
+        file: uploadedImages[0],
+      };
+
+      try {
+        const response = await API_CAMPAIGN.createCampaign(payload);
+
+        if (response.status === 200) {
+          return response.data.image_id;
+        }
+      } catch (e) {
+        console.error(e);
+      }
     };
 
-    console.log(payload);
+    const createImages = async (campaignId) => {
+      for (let i = 0; i < uploadedImages.length; i++) {
+        const { name } = uploadedImages[i];
 
-    const response = await API_CAMPAIGN.createCampaign(payload);
+        const imageObj = {
+          file: uploadedImages[i],
+          image_name: name.split('.')[0],
+          campaign_id: campaignId,
+          create_by: 'Jason',
+        };
 
-    console.log(response);
+        try {
+          await API_IMAGE.createImage(imageObj);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    const createCampaignTagLink = async (campaignId) => {
+      const payload = {
+        campaign_id: campaignId,
+        tag_names: selectedTags.map((t) => t.tag_name).join(','),
+        creation_datetime: new Date(),
+      };
+
+      try {
+        API_CAMPAIGNTAGLINK.createCampaignTagLink(payload);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const campaignId = await createCampaign();
+    createImages(campaignId);
+    createCampaignTagLink(campaignId);
   };
 
   const onNewCampaignChange = (e, t) => {
@@ -122,8 +168,8 @@ export default function Campaign() {
     updateCampaignDetail(d);
   };
 
-  const onSearch = (e, t) => {
-    console.log(t);
+  const onSelectTags = (e, t) => {
+    setSelectedTags(t);
   };
 
   const onDrawerClose = React.useCallback(() => {
@@ -359,7 +405,7 @@ export default function Campaign() {
             </Stack>
             <Autocomplete
               multiple
-              onChange={onSearch}
+              onChange={onSelectTags}
               id='tags-standard'
               options={allTagList}
               getOptionLabel={(option) => option['tag_name']}
