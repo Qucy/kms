@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Card,
   CardContent,
@@ -6,123 +7,129 @@ import {
   Typography,
   CardActionArea,
   Stack,
-  Drawer,
-  Box,
-  IconButton,
-  Chip,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Autocomplete,
+} from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { tagSliceSelector } from '../../hooks/tag/tagSlice';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 import { API_CAMPAIGN } from '../../utils/api';
-import Title from '../main/title';
-import { IconLabel, CampaignCard } from '../../components/common/index';
 import CampaignDrawer from './CampaignDrawer';
 
-const dummyData = [
-  {
-    company: 'ZA Bank',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'MGM Banner',
-    tag: ['account', 'acquisition', 'english', 'ZABank', 'MGM', 'Email'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'Revolut',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'Email Banner',
-    tag: ['account', 'Email', 'english', 'Relationship', 'Revolut', 'feature'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'Stashway',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'PWS Banner',
-    tag: ['investment', 'PWS', 'english', 'Stashway', 'activation'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'Citi Bank',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'FB Banner',
-    tag: ['chinese', 'investment', 'activation', 'citibank', 'facebook'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'MoneyHero',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'FB Banner',
-    tag: ['chinese', 'moneyhero', 'facebook', 'activation', 'investment'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'MoneyHero',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'FB Banner',
-    tag: ['chinese', 'moneyhero', 'facebook', 'activation', 'investment'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'MoneyHero',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'FB Banner',
-    tag: ['chinese', 'moneyhero', 'facebook', 'activation', 'investment'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'MoneyHero',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'FB Banner',
-    tag: ['chinese', 'moneyhero', 'facebook', 'activation', 'investment'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-  {
-    company: 'MoneyHero',
-    classification: 'Non-HSBC',
-    location: 'Hong Kong',
-    messageType: 'FB Banner',
-    tag: ['chinese', 'moneyhero', 'facebook', 'activation', 'investment'],
-    image:
-      'https://images.unsplash.com/photo-1542773998-9325f0a098d7?crop=entropy&auto=format&fit=crop&w=3271',
-  },
-];
-
 export default function Campaign() {
+  const allTagList = useSelector(tagSliceSelector.allTagList);
   const [campaigns, setCampaigns] = React.useState([]);
-  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [campaignDetail, setCampaignDetail] = React.useState({});
+  const [newCampaign, setNewCampaign] = React.useState({
+    companyName: '',
+    location: '',
+    classification: '',
+    messageType: '',
+    responseRate: 0,
+  });
+  const [uploadedImages, setUploadedImages] = React.useState();
+  const [imagePreview, setImagePreview] = React.useState();
+
+  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
   const [isLoading, setIsLoading] = React.useState(true);
 
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
   const updateCampaignDetail = (d) => setCampaignDetail(d);
+
+  const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
+
+  React.useEffect(() => {
+    if (!uploadedImages) {
+      setImagePreview(undefined);
+      return;
+    }
+    let preview_tmp = [];
+
+    for (let i = 0; i < uploadedImages.length; i++) {
+      let objectUrl = URL.createObjectURL(uploadedImages[i]);
+      preview_tmp.push(objectUrl);
+    }
+
+    setImagePreview(preview_tmp);
+    // free memory when ever this component is unmounted
+    // return () => URL.revokeObjectURL(objectUrl) TODO
+  }, [uploadedImages]);
+
+  const onImagesUpload = (e) => {
+    const { files } = e.target;
+
+    if (!files || files.length === 0) {
+      setUploadedImages(undefined);
+      return;
+    } else {
+      setUploadedImages(files);
+    }
+  };
+
+  React.useEffect(() => {
+    uploadedImages && console.log(uploadedImages['0']);
+  }, [uploadedImages]);
+
+  const onSaveNewCampaign = async () => {
+    const payload = {
+      company: newCampaign.companyName,
+      hsbc_vs_non_hsbc: newCampaign.classification,
+      location: newCampaign.location,
+      response_rate: newCampaign.responseRate,
+      message_type: newCampaign.messageType,
+      file: uploadedImages[0],
+    };
+
+    console.log(payload);
+
+    const response = await API_CAMPAIGN.createCampaign(payload);
+
+    console.log(response);
+  };
+
+  const onNewCampaignChange = (e, t) => {
+    setNewCampaign((_prevState) => {
+      _prevState[t] = t === 'responseRate' ? Number(e.target.value) : e.target.value;
+
+      return {
+        ..._prevState,
+      };
+    });
+  };
+
+  const onNewCampaign = () => {
+    toggleDialogOpen();
+  };
 
   const onSelect = (e, d) => {
     toggleDrawerOpen();
     updateCampaignDetail(d);
   };
 
+  const onSearch = (e, t) => {
+    console.log(t);
+  };
+
   const onDrawerClose = React.useCallback(() => {
     toggleDrawerOpen();
     updateCampaignDetail({});
   }, []);
-
-  React.useEffect(() => console.log(campaignDetail), [campaignDetail]);
 
   React.useEffect(() => {
     const fetch = async () => {
@@ -141,7 +148,7 @@ export default function Campaign() {
     fetch();
   }, []);
 
-  React.useEffect(() => console.log(campaigns), [campaigns]);
+  React.useEffect(() => console.log(newCampaign), [newCampaign]);
 
   if (isLoading) {
     return <CircularProgress />;
@@ -149,8 +156,22 @@ export default function Campaign() {
 
   return (
     <React.Fragment>
-      <Stack spacing={3} direction='row' justifyContent='space-between'>
-        <Title>Campaign</Title>
+      <Stack
+        direction='row'
+        justifyContent='space-between'
+        alignItems='center'
+        sx={{ mb: 2 }}
+      >
+        <Typography variant='h5' sx={{ fontColor: 'blue' }}>
+          Campaign
+        </Typography>
+        <Button
+          variant='contained'
+          startIcon={<AddOutlinedIcon />}
+          onClick={onNewCampaign}
+        >
+          New Campaign
+        </Button>
       </Stack>
 
       <Stack>
@@ -181,7 +202,6 @@ export default function Campaign() {
                 >
                   <CardMedia
                     component='img'
-                    // image={`../../../kms_backend/${d.campaign_thumbnail_url}`}
                     src={`data:image/jpeg;base64,${d.img}`}
                     alt='green iguana'
                   />
@@ -212,11 +232,6 @@ export default function Campaign() {
               </Card>
             </Grid>
           ))}
-          {/* {dummyData.map((d, i) => (
-            <Grid item xs={1} md={2} lg={2} key={i}>
-              <CampaignCard />
-            </Grid>
-          ))} */}
         </Grid>
       </Stack>
       <CampaignDrawer
@@ -224,6 +239,146 @@ export default function Campaign() {
         campaignDetail={campaignDetail}
         onClose={onDrawerClose}
       />
+      <Dialog open={isDialogOpen} onClose={toggleDialogOpen}>
+        <DialogTitle>New Campaign</DialogTitle>
+        <DialogContent sx={{ width: 500 }}>
+          <Stack>
+            <Typography variant='button' sx={{ color: 'black' }}>
+              Step 1
+            </Typography>
+            <Typography variant='body2'>Upload at least 1 image.</Typography>
+            <Button
+              variant='contained'
+              component='label'
+              startIcon={<PhotoCamera />}
+              sx={{ mt: 1, width: 200 }}
+              onChange={onImagesUpload}
+            >
+              Upload Image(s)
+              <input hidden accept='image/*' multiple type='file' />
+            </Button>
+            {uploadedImages &&
+              imagePreview &&
+              imagePreview.map((preview, index) => (
+                <img
+                  key={index}
+                  src={preview}
+                  width='400'
+                  height='400'
+                  alt='new uploaded'
+                  style={{ marginTop: '1em', marginBottom: '1em' }}
+                  loading='lazy'
+                />
+              ))}
+          </Stack>
+
+          <Stack spacing={1} sx={{ mt: 2 }}>
+            <Stack>
+              <Typography variant='button' sx={{ color: 'black' }}>
+                Step 2
+              </Typography>
+              <Typography variant='body2'>
+                Fill in required information for the campaign.
+              </Typography>
+            </Stack>
+            <TextField
+              autoFocus
+              required
+              margin='dense'
+              id='name'
+              label='Company Name'
+              type='text'
+              fullWidth
+              variant='standard'
+              onChange={(evt) => onNewCampaignChange(evt, 'companyName')}
+            />
+            <FormControl variant='standard' fullWidth required>
+              <InputLabel id='new-campaign-location'>Location</InputLabel>
+              <Select
+                labelId='new-campaign-location-label-id'
+                id='new-campaign-location-id'
+                value={newCampaign.location}
+                onChange={(evt) => onNewCampaignChange(evt, 'location')}
+                label='Location'
+              >
+                <MenuItem value={'Hong Kong'}>Hong Kong</MenuItem>
+                <MenuItem value={'Global'}>Global</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant='standard' fullWidth required>
+              <InputLabel id='new-campaign-classification'>Classification</InputLabel>
+              <Select
+                labelId='new-campaign-classification-label-id'
+                id='new-campaign-classification-id'
+                value={newCampaign.classification}
+                onChange={(evt) => onNewCampaignChange(evt, 'classification')}
+                label='Classification'
+              >
+                <MenuItem value={'HSBC'}>HSBC</MenuItem>
+                <MenuItem value={'Non-HSBC'}>Non-HSBC</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant='standard' fullWidth required>
+              <InputLabel id='new-campaign-messageType'>Message Type</InputLabel>
+              <Select
+                labelId='new-campaign-messageType-label-id'
+                id='new-campaign-messageType-id'
+                value={newCampaign.messageType}
+                onChange={(evt) => onNewCampaignChange(evt, 'messageType')}
+                label='Message Type'
+              >
+                <MenuItem value={'MBM Banner'}>MGM Banner</MenuItem>
+                <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
+                <MenuItem value={'PWS Banner'}>PWS Banner</MenuItem>
+                <MenuItem value={'FB Banner'}>FB Banner</MenuItem>
+                <MenuItem value={'Campaign Landing Page'}>Campaign Landing Page</MenuItem>
+                <MenuItem value={'PWS'}>PWS</MenuItem>
+                <MenuItem value={'Mobile In-App'}>Mobile In-App</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              autoFocus
+              margin='dense'
+              id='name'
+              label='Response Rate'
+              type='number'
+              fullWidth
+              variant='standard'
+              onChange={(evt) => onNewCampaignChange(evt, 'responseRate')}
+            />
+          </Stack>
+
+          <Stack spacing={1} sx={{ mt: 2 }}>
+            <Stack>
+              <Typography variant='button' sx={{ color: 'black' }}>
+                Step 3
+              </Typography>
+              <Typography variant='body2'>
+                Select related tag(s) of the campaign.
+              </Typography>
+            </Stack>
+            <Autocomplete
+              multiple
+              onChange={onSearch}
+              id='tags-standard'
+              options={allTagList}
+              getOptionLabel={(option) => option['tag_name']}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant='standard'
+                  label='Tags'
+                  placeholder='Tags'
+                />
+              )}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={toggleDialogOpen}>Cancel</Button>
+          <Button onClick={onSaveNewCampaign}>Save</Button>
+        </DialogActions>
+      </Dialog>
     </React.Fragment>
   );
 }
