@@ -77,15 +77,6 @@ export const API_CAMPAIGN = {
   },
 };
 
-export const API_CAMPAIGNTAGLINK = {
-  getTagsByCampaignId: async (id) => {
-    const config = {
-      method: 'get',
-      url: `campaign-tag-linkage/?campaign_id=${id}`,
-    };
-    return fetchRequest(config);
-  },
-};
 
 // tag module api
 export const API_TAG = {
@@ -137,13 +128,13 @@ export const API_CAMPAIGNTAGLINK = {
     };
     return fetchRequest(config);
   },
-  getTagNamesbycampaignID: async (campaign_id = '') => {
+  getTagsByCampaignId: async (id) => {
     const config = {
       method: 'get',
-      url: `/image-tag-link/?campaign_id=${campaign_id}`,
+      url: `campaign-tag-linkage/?campaign_id=${id}`,
     };
     return fetchRequest(config);
-  }
+  },
 }
 
 

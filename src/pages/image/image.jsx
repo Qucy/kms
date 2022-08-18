@@ -154,7 +154,7 @@ export default function TitlebarImageList() {
         />
       </Stack>
       <Stack>
-        <ImageList sx={{ height: 600 }}  cols={4}>
+        <ImageList sx={{ height: 800 }}  cols={4}>
           {/* Loop all the images */}
           {tableStatus !== 'LOADING' &&
             allImageList.map((item, index) => (

@@ -176,7 +176,7 @@ function ImageDialog(props) {
   } else {
     // update page
     return (
-      <Dialog open={isDetailDialogOpen} onClose={onDetailDialogClose}>
+      <Dialog  open={isDetailDialogOpen} onClose={onDetailDialogClose}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           <img
