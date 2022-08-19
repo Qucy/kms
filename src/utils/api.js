@@ -5,6 +5,11 @@ const axiosClient = axios.create({
   headers: { 'Content-type': 'application/json' },
 });
 
+const axiosImageClient = axios.create({
+  baseURL: process.env.REACT_APP_API_ENDPOINT,
+  headers: { 'content-type': 'multipart/form-data' },
+});
+
 const fetchRequest = (requestConfig) => {
   try {
     return axiosClient(requestConfig);
@@ -12,11 +17,6 @@ const fetchRequest = (requestConfig) => {
     console.error(error);
   }
 };
-
-const axiosImageClient = axios.create({
-  baseURL: process.env.REACT_APP_API_ENDPOINT,
-  headers: { 'content-type': 'multipart/form-data' },
-});
 
 const fetchImageRequest = (requestConfig) => {
   try {
@@ -50,7 +50,6 @@ export const API_IMAGE = {
     return fetchRequest(config);
   },
   createImage: async (payload) => {
-    console.log(JSON.stringify(payload));
     const config = {
       method: 'post',
       url: `/image/`,
@@ -71,12 +70,19 @@ export const API_CAMPAIGN = {
   getAllCampaigns: async () => {
     const config = {
       method: 'get',
-      url: `campaign/`,
+      url: `/campaign/`,
     };
     return fetchRequest(config);
   },
+  createCampaign: async (payload) => {
+    const config = {
+      method: 'post',
+      url: `/campaign/`,
+      data: payload,
+    };
+    return fetchImageRequest(config);
+  },
 };
-
 
 // tag module api
 export const API_TAG = {
@@ -143,9 +149,15 @@ export const API_CAMPAIGNTAGLINK = {
     };
     return fetchRequest(config);
   },
-}
-
-
+  createCampaignTagLink: async (payload) => {
+    const config = {
+      method: 'post',
+      url: `/campaign-tag-linkage/`,
+      data: JSON.stringify(payload),
+    };
+    return fetchRequest(config);
+  },
+};
 
 // ImageTagLink API
 export const API_IMAGETAGLINK = {

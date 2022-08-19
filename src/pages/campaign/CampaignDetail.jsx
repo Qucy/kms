@@ -19,7 +19,7 @@ import { IconLabel } from '../../components/common';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import { API_IMAGE, API_CAMPAIGNTAGLINK } from '../../utils/api';
 
-export default function CampaignDrawer({ campaignDetail, open, onClose }) {
+export default function CampaignDetail({ campaignDetail, open, onClose }) {
   const { campaignId, company, classification, location, messageType, responseRate } =
     campaignDetail;
 
@@ -57,8 +57,6 @@ export default function CampaignDrawer({ campaignDetail, open, onClose }) {
     fetchImages(campaignId);
     fetchTag(campaignId);
   }, [campaignId]);
-
-  React.useEffect(() => console.log(images), [images]);
 
   return (
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
@@ -113,6 +111,7 @@ export default function CampaignDrawer({ campaignDetail, open, onClose }) {
           {!isTagLoading &&
             tags.map((t, i) => (
               <Chip
+                key={i}
                 label={`#${t.tag_name.toLowerCase()}`}
                 size='small'
                 sx={{ px: 0.5, mr: 0.5 }}
@@ -135,6 +134,7 @@ export default function CampaignDrawer({ campaignDetail, open, onClose }) {
                 src={`data:image/jpeg;base64,${image.img}`}
                 alt={image.image_name}
                 loading='lazy'
+                key={i}
               />
             ))}
         </Stack>
