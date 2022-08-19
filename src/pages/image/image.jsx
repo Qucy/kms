@@ -22,7 +22,7 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useEffect } from 'react';
-import { API_IMAGETAGLINK } from '../../utils/api';
+import { API_IMAGETAGLINK, API_CAMPAIGNTAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import {
@@ -100,9 +100,7 @@ export default function TitlebarImageList() {
 
     dispatch(setScrollPageNumber(1));
 
-    const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value);
-    const image_names = image_name_res.data.map((a) => a.image_name);
-    getFilteredImage(image_names);
+    getFilteredImage(value);
   };
 
   React.useEffect(() => console.log(imageSource), [imageSource]);

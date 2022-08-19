@@ -80,16 +80,13 @@ const useImage = () => {
   };
 
   //function to retrieve all the images
-  const getFilteredImage = async (image_names) => {
+  const getFilteredImage = async (tag_names) => {
     dispatch(setTableStatus('LOADING'));
-    const imageNamesStr = image_names.toString();
-
     try {
-      const response = await API_IMAGE.getFilteredImages(imageNamesStr);
+      const response = await API_IMAGE.getFilteredImages(tag_names);
       if (response.status === 200) {
         imageCount.current = response.data.count;
         const allImage = response.data.results;
-        const imagesWithTag = await getImagesWithTag(allImage, imageNamesStr);
 
         dispatch(setPaginatedImageList([...allImage]));
         dispatch(setTableStatus('SUCCESS'));

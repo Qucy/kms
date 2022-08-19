@@ -35,10 +35,10 @@ export const API_IMAGE = {
     };
     return fetchRequest(config);
   },
-  getFilteredImages: async (image_names = '') => {
+  getFilteredImages: async (tag_names = '') => {
     const config = {
       method: 'get',
-      url: `/image/?image_names=${image_names}`,
+      url: `/image/?tag_names=${tag_names}`,
     };
     return fetchRequest(config);
   },
@@ -128,6 +128,14 @@ export const API_CAMPAIGNTAGLINK = {
     };
     return fetchRequest(config);
   },
+  getTagNamesbycampaignID: async (campaign_id = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?campaign_id=${campaign_id}`,
+    };
+    return fetchRequest(config);
+  }
+  ,
   getTagsByCampaignId: async (id) => {
     const config = {
       method: 'get',
