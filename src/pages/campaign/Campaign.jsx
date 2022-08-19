@@ -13,6 +13,7 @@ import {
   Select,
   MenuItem,
   Autocomplete,
+  responsiveFontSizes,
 } from '@mui/material';
 import {
   Dialog,
@@ -29,6 +30,8 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
 import { API_CAMPAIGN, API_CAMPAIGNTAGLINK, API_IMAGE } from '../../utils/api';
 import CampaignDrawer from './CampaignDrawer';
+import { LoadingButton } from '@mui/lab';
+import { Password } from '@mui/icons-material';
 
 export default function Campaign() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
@@ -50,6 +53,7 @@ export default function Campaign() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isSaveButtonLoading, setIsSaveButtonLoading] = React.useState(false);
 
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
   const updateCampaignDetail = (d) => setCampaignDetail(d);
@@ -88,6 +92,17 @@ export default function Campaign() {
     uploadedImages && console.log(uploadedImages['0']);
   }, [uploadedImages]);
 
+  const checkEmptyProperty = React.useMemo(() => {
+    //check uploaded
+    const isLackImages = uploadedImages ? false : true;
+
+    //check required campaign information
+    const { responseRate, ...requiredInfo } = newCampaign;
+    const isLackCampaignInfo = !Object.values(requiredInfo).every((v) => v);
+
+    return isLackImages || isLackCampaignInfo;
+  }, [uploadedImages, newCampaign]);
+
   const onSaveNewCampaign = async () => {
     const createCampaign = async () => {
       const payload = {
@@ -104,7 +119,7 @@ export default function Campaign() {
         const response = await API_CAMPAIGN.createCampaign(payload);
 
         if (response.status === 200) {
-          return response.data.image_id;
+          return response.data.campaign_id;
         }
       } catch (e) {
         console.error(e);
@@ -123,7 +138,11 @@ export default function Campaign() {
         };
 
         try {
-          await API_IMAGE.createImage(imageObj);
+          const response = await API_IMAGE.createImage(imageObj);
+
+          if (response.status === 200) {
+            return response.status;
+          }
         } catch (e) {
           console.error(e);
         }
@@ -138,15 +157,26 @@ export default function Campaign() {
       };
 
       try {
-        API_CAMPAIGNTAGLINK.createCampaignTagLink(payload);
+        const response = await API_CAMPAIGNTAGLINK.createCampaignTagLink(payload);
+
+        if (response.status === 200) {
+          return response.status;
+        }
       } catch (e) {
         console.error(e);
       }
     };
 
+    setIsSaveButtonLoading(true);
+
     const campaignId = await createCampaign();
-    createImages(campaignId);
-    createCampaignTagLink(campaignId);
+    const isCreateImagesSuccess = createImages(campaignId);
+    const isCreateCampaignTagLinkSuccess = createCampaignTagLink(campaignId);
+
+    if (isCreateImagesSuccess && isCreateCampaignTagLinkSuccess) {
+      setIsSaveButtonLoading(false);
+      setTimeout(() => toggleDialogOpen(), 500);
+    }
   };
 
   const onNewCampaignChange = (e, t) => {
@@ -193,8 +223,6 @@ export default function Campaign() {
 
     fetch();
   }, []);
-
-  React.useEffect(() => console.log(newCampaign), [newCampaign]);
 
   if (isLoading) {
     return <CircularProgress />;
@@ -422,7 +450,13 @@ export default function Campaign() {
         </DialogContent>
         <DialogActions>
           <Button onClick={toggleDialogOpen}>Cancel</Button>
-          <Button onClick={onSaveNewCampaign}>Save</Button>
+          <LoadingButton
+            loading={isSaveButtonLoading}
+            onClick={onSaveNewCampaign}
+            disabled={checkEmptyProperty}
+          >
+            Save
+          </LoadingButton>
         </DialogActions>
       </Dialog>
     </React.Fragment>
