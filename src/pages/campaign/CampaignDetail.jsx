@@ -19,7 +19,7 @@ import { IconLabel } from '../../components/common';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import { API_IMAGE, API_CAMPAIGNTAGLINK } from '../../utils/api';
 
-export default function CampaignDrawer({ campaignDetail, open, onClose }) {
+export default function CampaignDetail({ campaignDetail, open, onClose }) {
   const { campaignId, company, classification, location, messageType, responseRate } =
     campaignDetail;
 
