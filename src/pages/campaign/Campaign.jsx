@@ -60,6 +60,23 @@ export default function Campaign() {
 
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
+  const fetchCampaigns = async () => {
+    try {
+      const response = await API_CAMPAIGN.getAllCampaigns();
+
+      if (response.status === 200) {
+        setCampaigns(response.data);
+        setIsLoading(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
   React.useEffect(() => {
     if (!uploadedImages) {
       setImagePreview(undefined);
@@ -87,10 +104,6 @@ export default function Campaign() {
       setUploadedImages(files);
     }
   };
-
-  React.useEffect(() => {
-    uploadedImages && console.log(uploadedImages['0']);
-  }, [uploadedImages]);
 
   const checkEmptyProperty = React.useMemo(() => {
     //check uploaded
@@ -170,12 +183,16 @@ export default function Campaign() {
     setIsSaveButtonLoading(true);
 
     const campaignId = await createCampaign();
-    const isCreateImagesSuccess = createImages(campaignId);
-    const isCreateCampaignTagLinkSuccess = createCampaignTagLink(campaignId);
+    const isCreateImagesSuccess = await createImages(campaignId);
+    const isCreateCampaignTagLinkSuccess = await createCampaignTagLink(campaignId);
 
     if (isCreateImagesSuccess && isCreateCampaignTagLinkSuccess) {
       setIsSaveButtonLoading(false);
       setTimeout(() => toggleDialogOpen(), 500);
+      setTimeout(() => {
+        setIsLoading(true);
+        fetchCampaigns();
+      }, 1000);
     }
   };
 
@@ -205,23 +222,6 @@ export default function Campaign() {
   const onDrawerClose = React.useCallback(() => {
     toggleDrawerOpen();
     updateCampaignDetail({});
-  }, []);
-
-  React.useEffect(() => {
-    const fetch = async () => {
-      try {
-        const response = await API_CAMPAIGN.getAllCampaigns();
-
-        if (response.status === 200) {
-          setCampaigns(response.data);
-          setIsLoading(false);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    fetch();
   }, []);
 
   if (isLoading) {
@@ -356,7 +356,6 @@ export default function Campaign() {
               </Typography>
             </Stack>
             <TextField
-              autoFocus
               required
               margin='dense'
               id='name'
@@ -411,7 +410,6 @@ export default function Campaign() {
               </Select>
             </FormControl>
             <TextField
-              autoFocus
               margin='dense'
               id='name'
               label='Response Rate'
