@@ -74,13 +74,13 @@ export default function Menu(props) {
             <ListItemIcon>
               <FolderOpenOutlinedIcon />
             </ListItemIcon>
-            <ListItemText primary='Campaign' />
+            <ListItemText primary='Campaign Repository' />
           </ListItemButton>
           <ListItemButton component={NavLink} to='/main/image'>
             <ListItemIcon>
               <InsertPhotoOutlinedIcon />
             </ListItemIcon>
-            <ListItemText primary='Images' />
+            <ListItemText primary='Image Gallery' />
           </ListItemButton>
           {/* <ListItemButton component={NavLink} to='/main/document'>
             <ListItemIcon>
