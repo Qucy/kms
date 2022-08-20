@@ -5,6 +5,7 @@ import {
   ImageList,
   ImageListItem,
   ImageListItemBar,
+  Typography,
   TextField,
   IconButton,
   Button,
@@ -22,13 +23,14 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useEffect } from 'react';
-import { API_IMAGETAGLINK } from '../../utils/api';
+import { API_IMAGETAGLINK, API_CAMPAIGNTAGLINK } from '../../utils/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import {
   imageSliceSelector,
   setImageSource,
   setScrollPageNumber,
+  setPaginatedImageList
 } from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
@@ -82,10 +84,6 @@ export default function TitlebarImageList() {
 
   const [detail, setDetail] = React.useState(false);
 
-  useEffect(() => {
-    getPaginatedImage();
-  }, []);
-
   React.useEffect(() => {
     imageSource !== 'SEARCH' && getPaginatedImage(scrollPageNumber);
   }, [scrollPageNumber, imageSource]);
@@ -94,15 +92,17 @@ export default function TitlebarImageList() {
 
   // search function for image list
   const onSearch = async (event, value) => {
-    (Array.isArray(value) && value.length) === 0
-      ? dispatch(setImageSource('DEFAULT'))
-      : dispatch(setImageSource('SEARCH'));
+    if ((Array.isArray(value) && value.length) === 0){
+      dispatch(setPaginatedImageList([]));
+      dispatch(setImageSource('DEFAULT'));
+    }
+    else {
+      dispatch(setImageSource('SEARCH'));
+    }
 
     dispatch(setScrollPageNumber(1));
 
-    const image_name_res = await API_IMAGETAGLINK.getImagesNamesbyTagName(value);
-    const image_names = image_name_res.data.map((a) => a.image_name);
-    getFilteredImage(image_names);
+    getFilteredImage(value);
   };
 
   React.useEffect(() => console.log(imageSource), [imageSource]);
@@ -136,6 +136,9 @@ export default function TitlebarImageList() {
     <div>
       {/* Search component */}
       <Stack spacing={3} direction='row' justifyContent='space-between'>
+        <Typography variant='h5' sx={{ fontColor: 'blue' }}>
+          Image Gallery
+        </Typography>
         <Autocomplete
           onChange={onSearch}
           sx={{ width: 500 }}

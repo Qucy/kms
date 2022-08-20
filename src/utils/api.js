@@ -35,10 +35,10 @@ export const API_IMAGE = {
     };
     return fetchRequest(config);
   },
-  getFilteredImages: async (image_names = '') => {
+  getFilteredImages: async (tag_names = '') => {
     const config = {
       method: 'get',
-      url: `/image/?image_names=${image_names}`,
+      url: `/image/?tag_names=${tag_names}`,
     };
     return fetchRequest(config);
   },
@@ -71,6 +71,20 @@ export const API_CAMPAIGN = {
     const config = {
       method: 'get',
       url: `/campaign/`,
+    };
+    return fetchRequest(config);
+  },
+  getCampaignsByMessageType: async (message_type) => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?message_type=${message_type}`,
+    };
+    return fetchRequest(config);
+  },
+  getCampaignsByHSBCvsNonHSBC: async (hsbc_vs_non_hsbc) => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?hsbc_vs_non_hsbc=${hsbc_vs_non_hsbc}`,
     };
     return fetchRequest(config);
   },
@@ -134,6 +148,14 @@ export const API_CAMPAIGNTAGLINK = {
     };
     return fetchRequest(config);
   },
+  getTagNamesbycampaignID: async (campaign_id = '') => {
+    const config = {
+      method: 'get',
+      url: `/image-tag-link/?campaign_id=${campaign_id}`,
+    };
+    return fetchRequest(config);
+  }
+  ,
   getTagsByCampaignId: async (id) => {
     const config = {
       method: 'get',

@@ -167,7 +167,7 @@ export default function Tags() {
         </Button>
         <Pagination
           onChange={onPaginate}
-          count={Math.ceil(pageCount.current / 10)}
+          count={Math.ceil(pageCount.current / 13)}
           page={pageNumber}
           showFirstButton
           showLastButton
