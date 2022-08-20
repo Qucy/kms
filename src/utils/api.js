@@ -74,6 +74,20 @@ export const API_CAMPAIGN = {
     };
     return fetchRequest(config);
   },
+  getCampaignsByMessageType: async (message_type) => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?message_type=${message_type}`,
+    };
+    return fetchRequest(config);
+  },
+  getCampaignsByHSBCvsNonHSBC: async (hsbc_vs_non_hsbc) => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?hsbc_vs_non_hsbc=${hsbc_vs_non_hsbc}`,
+    };
+    return fetchRequest(config);
+  },
   createCampaign: async (payload) => {
     const config = {
       method: 'post',

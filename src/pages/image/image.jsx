@@ -5,6 +5,7 @@ import {
   ImageList,
   ImageListItem,
   ImageListItemBar,
+  Typography,
   TextField,
   IconButton,
   Button,
@@ -84,7 +85,6 @@ export default function TitlebarImageList() {
   const [detail, setDetail] = React.useState(false);
 
   React.useEffect(() => {
-    console.log('Use effect 2')
     imageSource !== 'SEARCH' && getPaginatedImage(scrollPageNumber);
   }, [scrollPageNumber, imageSource]);
 
@@ -136,6 +136,9 @@ export default function TitlebarImageList() {
     <div>
       {/* Search component */}
       <Stack spacing={3} direction='row' justifyContent='space-between'>
+        <Typography variant='h5' sx={{ fontColor: 'blue' }}>
+          Image Gallery
+        </Typography>
         <Autocomplete
           onChange={onSearch}
           sx={{ width: 500 }}
