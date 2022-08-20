@@ -1,4 +1,10 @@
 import * as React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setCampaignList,
+  setCampaignDetail,
+  campaignSliceSelector,
+} from '../../hooks/campaign/campaignSlice';
 import {
   Card,
   CardContent,
@@ -18,16 +24,20 @@ import CampaignDetail from './CampaignDetail';
 import NewCampaign from './NewCampaign';
 
 export default function Campaign() {
-  const [campaigns, setCampaigns] = React.useState([]);
-  const [campaignDetail, setCampaignDetail] = React.useState({});
+  const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
+  const dispatch = useDispatch();
 
+  console.log(campaignDetail);
+
+  const [campaigns, setCampaigns] = React.useState([]);
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const [isLoading, setIsLoading] = React.useState(true);
 
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
-  const updateCampaignDetail = (d) => setCampaignDetail(d);
+
+  const updateCampaignDetail = (d) => dispatch(setCampaignDetail(d));
 
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
