@@ -29,6 +29,7 @@ import {
   imageSliceSelector,
   setImageSource,
   setScrollPageNumber,
+  setPaginatedImageList
 } from '../../hooks/image/imageSlice';
 import useImage from '../../hooks/image/useImage';
 import ImageDialog from './imageDialog';
@@ -82,11 +83,8 @@ export default function TitlebarImageList() {
 
   const [detail, setDetail] = React.useState(false);
 
-  useEffect(() => {
-    getPaginatedImage();
-  }, []);
-
   React.useEffect(() => {
+    console.log('Use effect 2')
     imageSource !== 'SEARCH' && getPaginatedImage(scrollPageNumber);
   }, [scrollPageNumber, imageSource]);
 
@@ -94,9 +92,13 @@ export default function TitlebarImageList() {
 
   // search function for image list
   const onSearch = async (event, value) => {
-    (Array.isArray(value) && value.length) === 0
-      ? dispatch(setImageSource('DEFAULT'))
-      : dispatch(setImageSource('SEARCH'));
+    if ((Array.isArray(value) && value.length) === 0){
+      dispatch(setPaginatedImageList([]));
+      dispatch(setImageSource('DEFAULT'));
+    }
+    else {
+      dispatch(setImageSource('SEARCH'));
+    }
 
     dispatch(setScrollPageNumber(1));
 

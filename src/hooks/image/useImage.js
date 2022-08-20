@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { API_IMAGE, API_IMAGETAGLINK, API_TAG,API_CAMPAIGNTAGLINK } from '../../utils/api';
+import { API_IMAGE, API_IMAGETAGLINK, API_CAMPAIGNTAGLINK } from '../../utils/api';
 import imageSlice, {
   imageSliceSelector,
   setScrollPageNumber,
@@ -67,13 +67,14 @@ const useImage = () => {
       if (response.status === 200) {
         imageCount.current = response.data.count;
         const allImage = response.data.results;
-        const campaign_id = allImage.map((a) => a.campaign_id);
-        console.log(allImage)
+
         // const imagesWithTag = await getImagesWithTag(allImage, campaign_id);
 
         dispatch(setPaginatedImageList([...allImageList, ...allImage]));
         dispatch(setTableStatus('SUCCESS'));
       }
+      
+
     } catch (error) {
       console.error(error);
     }
@@ -81,7 +82,7 @@ const useImage = () => {
 
   //function to retrieve all the images
   const getFilteredImage = async (tag_names) => {
-    dispatch(setTableStatus('LOADING'));
+    // dispatch(setTableStatus('LOADING'));
     try {
       const response = await API_IMAGE.getFilteredImages(tag_names);
       if (response.status === 200) {
@@ -98,7 +99,7 @@ const useImage = () => {
 
   const initImages = async (pageNumber) => {
     //set loading
-    dispatch(setTableStatus('LOADING'));
+    // dispatch(setTableStatus('LOADING'));
     const response = await API_IMAGE.getPaginatedImages(pageNumber);
 
     //set dataSource to DEFAULT

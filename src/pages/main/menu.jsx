@@ -23,7 +23,7 @@ import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 
 //import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
-const drawerWidth = 240;
+const drawerWidth = 250;
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
@@ -70,8 +70,8 @@ export default function Menu(props) {
       <Divider />
       <List component='nav'>
         <React.Fragment>
-          <ListItemButton component={NavLink} to='/main/campaign'>
-            <ListItemIcon>
+          <ListItemButton  component={NavLink} to='/main/campaign'>
+            <ListItemIcon sx={{ padding: 0}}>
               <FolderOpenOutlinedIcon />
             </ListItemIcon>
             <ListItemText primary='Campaign Repository' />
