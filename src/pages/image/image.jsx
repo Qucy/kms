@@ -98,9 +98,11 @@ export default function TitlebarImageList() {
     if ((Array.isArray(value) && value.length) === 0){
       dispatch(setPaginatedImageList([]));
       dispatch(setImageSource('DEFAULT'));
+      value = ""
     }
     else {
       dispatch(setImageSource('SEARCH'));
+      value = Object.keys(value).map((key) => value[key].tag_name)
     }
 
     dispatch(setScrollPageNumber(1));

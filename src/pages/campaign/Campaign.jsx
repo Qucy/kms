@@ -97,7 +97,9 @@ export default function Campaign() {
       fetchCampaigns()
      }
      else {
+      value = Object.keys(value).map((key) => value[key].tag_name)
       fetchFilteredCampaigns(value);
+      
     }
     };
 
@@ -232,6 +234,7 @@ export default function Campaign() {
           sx={{ mb: 5, mt: 4 }}
           divider={<Divider orientation="vertical" flexItem />}
       >
+        
         <Autocomplete
           onChange={onSearch}
           sx={{ width: 300 }}
