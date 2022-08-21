@@ -37,6 +37,7 @@ import ImageDialog from './imageDialog';
 
 // function component for image list
 export default function TitlebarImageList() {
+  
   const scrollPageNumber = useSelector(imageSliceSelector.scrollPageNumber);
   const imageSource = useSelector(imageSliceSelector.imageSource);
   const allTagList = useSelector(tagSliceSelector.allTagList);
@@ -44,6 +45,8 @@ export default function TitlebarImageList() {
   const tableStatus = useSelector(imageSliceSelector.tableStatus);
   const imageObject = useSelector(imageSliceSelector.imageObject);
   const buttonStatus = useSelector(imageSliceSelector.buttonStatus);
+  console.log(imageObject)
+
 
   const dispatch = useDispatch();
 

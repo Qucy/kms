@@ -1,4 +1,6 @@
-import * as React from 'react';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+
 import {
   Card,
   CardContent,
@@ -17,8 +19,6 @@ import {
   Divider
 } from '@mui/material';
 
-import { useSelector, useDispatch } from 'react-redux';
-
 import Grid from '@mui/material/Grid';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 
@@ -27,14 +27,21 @@ import CampaignDetail from './CampaignDetail';
 import NewCampaign from './NewCampaign';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
+import {
+  setCampaignList,
+  setCampaignDetail,
+  campaignSliceSelector,
+} from '../../hooks/campaign/campaignSlice';
+
 export default function Campaign() {
-  const [campaigns, setCampaigns] = React.useState([]);
-  const [campaignDetail, setCampaignDetail] = React.useState({});
+  const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
 
   const dropDownOption = React.useRef(0)
   const [messageType, setMessageType] = React.useState("All Message Type");
   const [companyName, setCompanyName] = React.useState("All Companies");
   const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState("All Campaign")
+
+  const [campaigns, setCampaigns] = React.useState([]);
 
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -44,7 +51,8 @@ export default function Campaign() {
   const [imageSource, setImageSource] = React.useState('DEFAULT')
 
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
-  const updateCampaignDetail = (d) => setCampaignDetail(d);
+
+  const updateCampaignDetail = (d) => dispatch(setCampaignDetail(d));
 
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
@@ -140,16 +148,16 @@ export default function Campaign() {
       setIsLoading(true);
 
       // Extract the value selcted by the user
-      var messageType = event.target.value
+      var messageType = event.target.value;
 
       // Display the selected value
-      setMessageType(messageType)
+      setMessageType(messageType);
 
       // Special handling for default value
       if (messageType === "All Message Type") {
         messageType = ""
       }
-      
+
       // Get data by calling the API endpoint
       const response = await API_CAMPAIGN.getCampaignsByMessageType(messageType);
       if (response.status === 200) {
@@ -167,16 +175,16 @@ export default function Campaign() {
       setIsLoading(true);
 
       // Extract the value selcted by the user
-      var hsbcvsNonHSBC = event.target.value
+      var hsbcvsNonHSBC = event.target.value;
 
       // Display the selected value
-      sethsbcvsNonHSBC(hsbcvsNonHSBC)
+      sethsbcvsNonHSBC(hsbcvsNonHSBC);
 
       // Special handling for default value
       if (hsbcvsNonHSBC === "All Campaign") {
         hsbcvsNonHSBC = ""
       }
-      
+
       // Get data by calling the API endpoint
       const response = await API_CAMPAIGN.getCampaignsByHSBCvsNonHSBC(hsbcvsNonHSBC);
       if (response.status === 200) {
@@ -187,8 +195,6 @@ export default function Campaign() {
       console.error(e);
     }
   };
-
-
 
   const onDrawerClose = React.useCallback(() => {
     toggleDrawerOpen();
