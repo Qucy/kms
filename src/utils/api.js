@@ -74,6 +74,13 @@ export const API_CAMPAIGN = {
     };
     return fetchRequest(config);
   },
+  getFilteredCampaigns: async (tag_names = '') => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?tag_names=${tag_names}`,
+    };
+    return fetchRequest(config);
+  },
   getCampaignsByMessageType: async (message_type) => {
     const config = {
       method: 'get',
@@ -85,6 +92,13 @@ export const API_CAMPAIGN = {
     const config = {
       method: 'get',
       url: `/campaign/?hsbc_vs_non_hsbc=${hsbc_vs_non_hsbc}`,
+    };
+    return fetchRequest(config);
+  },
+  getCampaignsByCompanyName: async (companyName) => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?company=${companyName}`,
     };
     return fetchRequest(config);
   },

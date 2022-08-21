@@ -11,8 +11,13 @@ import {
   Button,
   Select,
   InputLabel,
-  FormControl
+  FormControl,
+  Autocomplete,
+  TextField,
+  Divider
 } from '@mui/material';
+
+import { useSelector, useDispatch } from 'react-redux';
 
 import Grid from '@mui/material/Grid';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
@@ -20,6 +25,7 @@ import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import { API_CAMPAIGN } from '../../utils/api';
 import CampaignDetail from './CampaignDetail';
 import NewCampaign from './NewCampaign';
+import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
 export default function Campaign() {
   const [campaigns, setCampaigns] = React.useState([]);
@@ -27,6 +33,7 @@ export default function Campaign() {
 
   const dropDownOption = React.useRef(0)
   const [messageType, setMessageType] = React.useState("All Message Type");
+  const [companyName, setCompanyName] = React.useState("All Companies");
   const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState("All Campaign")
 
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
@@ -34,24 +41,58 @@ export default function Campaign() {
 
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const [imageSource, setImageSource] = React.useState('DEFAULT')
+
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
   const updateCampaignDetail = (d) => setCampaignDetail(d);
 
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
+  const allTagList = useSelector(tagSliceSelector.allTagList);
+
+  const dispatch = useDispatch();
+
   const fetchCampaigns = async () => {
+    setIsLoading(true);
     try {
       const response = await API_CAMPAIGN.getAllCampaigns();
 
       if (response.status === 200) {
         setCampaigns(response.data);
-        dropDownOption.messageType = [... new Set(response.data.map(a => a.message_type))]
+        dropDownOption.messageType = [...new Set(response.data.map(a => a.message_type))]
+        dropDownOption.companyName = [...new Set(response.data.map(a => a.company))]
         setIsLoading(false);
       }
     } catch (e) {
       console.error(e);
     }
   };
+
+  //function to retrieve all the images
+  const fetchFilteredCampaigns = async (tag_names) => {
+    try {
+      const response = await API_CAMPAIGN.getFilteredCampaigns(tag_names);
+      console.log(response.data)
+      if (response.status === 200) {
+        setCampaigns(response.data);
+        dropDownOption.messageType = [...new Set(response.data.map(a => a.message_type))]
+        dropDownOption.companyName = [...new Set(response.data.map(a => a.company))]
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // search function for image list
+  const onSearch = async (event, value) => {
+     if ((Array.isArray(value) && value.length) === 0) {
+      fetchCampaigns()
+     }
+     else {
+      fetchFilteredCampaigns(value);
+    }
+    };
 
   React.useEffect(() => {
     fetchCampaigns();
@@ -64,6 +105,33 @@ export default function Campaign() {
   const onSelect = (e, d) => {
     toggleDrawerOpen();
     updateCampaignDetail(d);
+  };
+
+  const handleCompanyNameChange = async (event) => {
+    try {
+      // Display the loading page
+      setIsLoading(true);
+
+      // Extract the value selcted by the user
+      var companyName = event.target.value
+
+      // Display the selected value
+      setCompanyName(companyName)
+
+      // Special handling for default value
+      if (companyName === "All Companies") {
+        companyName = ""
+      }
+      
+      // Get data by calling the API endpoint
+      const response = await API_CAMPAIGN.getCampaignsByCompanyName(companyName);
+      if (response.status === 200) {
+        setCampaigns(response.data);
+        setIsLoading(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleMessageTypeChange = async (event) => {
@@ -79,7 +147,7 @@ export default function Campaign() {
 
       // Special handling for default value
       if (messageType === "All Message Type") {
-        var messageType = ""
+        messageType = ""
       }
       
       // Get data by calling the API endpoint
@@ -106,7 +174,7 @@ export default function Campaign() {
 
       // Special handling for default value
       if (hsbcvsNonHSBC === "All Campaign") {
-        var hsbcvsNonHSBC = ""
+        hsbcvsNonHSBC = ""
       }
       
       // Get data by calling the API endpoint
@@ -120,7 +188,7 @@ export default function Campaign() {
     }
   };
 
-  
+
 
   const onDrawerClose = React.useCallback(() => {
     toggleDrawerOpen();
@@ -143,40 +211,6 @@ export default function Campaign() {
           Campaign Repository
         </Typography>
 
-        <FormControl size='20px'>
-          <InputLabel id="message_type_label">Message Type</InputLabel>
-          <Select
-            labelId="message_type_label"
-            id="demo-simple-select"
-            label="HSBC vs Non HSBC"
-            value={messageType}
-            onChange={handleMessageTypeChange}
-          >
-            {dropDownOption.messageType.map((d, i) =>
-            (
-                  <MenuItem key={i} value={d}>{d}</MenuItem>
-            )
-            )
-            }
-            <MenuItem key={999} value={"All Message Type"}>{"All Message Type"}</MenuItem>
-          </Select>
-        </FormControl>
-        
-        <FormControl size='20px'>
-          <InputLabel id="hsbc_vs_non_hsbc_label">HSBC vs Non-HSBC</InputLabel>
-          <Select
-            labelId="hsbc_vs_non_hsbc_label"
-            id="demo-hsbc_vs_non_hsbc_label-select"
-            label="HSBC vs Non HSBC"
-            value={hsbcvsNonHSBC}
-            onChange={handleHSBCvsNonHSBCChange}
-          >
-            <MenuItem key={1} value={"All Campaign"}>{"All Campaign"}</MenuItem>
-            <MenuItem key={2} value={"HSBC"}>{"HSBC Campaign"}</MenuItem>
-            <MenuItem key={3} value={"Non-HSBC"}>{"Non-HSBC Campaign"}</MenuItem>
-          </Select>
-        </FormControl>
-
         <Button
           variant='contained'
           startIcon={<AddOutlinedIcon />}
@@ -184,6 +218,86 @@ export default function Campaign() {
         >
           New Campaign
         </Button>
+      </Stack>
+
+      <Stack
+          direction='row'
+          justifyContent='space-evenly'
+          alignItems='center'
+          sx={{ mb: 5, mt: 2 }}
+          divider={<Divider orientation="vertical" flexItem />}
+      >
+        <Autocomplete
+          onChange={onSearch}
+          sx={{ width: 500 }}
+          multiple
+          id='tags-standard'
+          options={allTagList.map((t) => t.tag_name)}
+          getOptionLabel={(option) => option}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant='standard'
+              label='Search by hash tag'
+              placeholder='Hash tag'
+            />
+          )}
+        />
+
+        <FormControl >
+            <InputLabel id="company_label">Company</InputLabel>
+            <Select
+              labelId="company_label"
+              id="demo-compnay-select"
+              label="Company"
+              value={companyName}
+              onChange={handleCompanyNameChange}
+            >
+              {dropDownOption.companyName.map((d, i) =>
+              (
+                    <MenuItem key={i} value={d}>{d}</MenuItem>
+              )
+              )
+              }
+              <MenuItem key={999} value={"All Companies"}>{"All Companies"}</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl>
+            <InputLabel id="message_type_label">Message Type</InputLabel>
+            <Select
+              labelId="message_type_label"
+              id="demo-message-type-select"
+              label="HSBC vs Non HSBC"
+              value={messageType}
+              onChange={handleMessageTypeChange}
+            >
+              {dropDownOption.messageType.map((d, i) =>
+              (
+                    <MenuItem key={i} value={d}>{d}</MenuItem>
+              )
+              )
+              }
+              <MenuItem key={999} value={"All Message Type"}>{"All Message Type"}</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <FormControl>
+            <InputLabel id="hsbc_vs_non_hsbc_label">HSBC vs Non-HSBC</InputLabel>
+            <Select
+              labelId="hsbc_vs_non_hsbc_label"
+              id="demo-hsbc_vs_non_hsbc_label-select"
+              label="HSBC vs Non HSBC"
+              value={hsbcvsNonHSBC}
+              onChange={handleHSBCvsNonHSBCChange}
+            >
+              <MenuItem key={1} value={"All Campaign"}>{"All Campaign"}</MenuItem>
+              <MenuItem key={2} value={"HSBC"}>{"HSBC Campaign"}</MenuItem>
+              <MenuItem key={3} value={"Non-HSBC"}>{"Non-HSBC Campaign"}</MenuItem>
+            </Select>
+          </FormControl>
+
+
       </Stack>
 
       <Stack>
