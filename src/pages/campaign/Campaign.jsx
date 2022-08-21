@@ -80,7 +80,6 @@ export default function Campaign() {
   const fetchFilteredCampaigns = async (tag_names) => {
     try {
       const response = await API_CAMPAIGN.getFilteredCampaigns(tag_names);
-      console.log(response.data)
       if (response.status === 200) {
         setCampaigns(response.data);
         dropDownOption.messageType = [...new Set(response.data.map(a => a.message_type))]
@@ -230,16 +229,17 @@ export default function Campaign() {
           direction='row'
           justifyContent='space-evenly'
           alignItems='center'
-          sx={{ mb: 5, mt: 2 }}
+          sx={{ mb: 5, mt: 4 }}
           divider={<Divider orientation="vertical" flexItem />}
       >
         <Autocomplete
           onChange={onSearch}
-          sx={{ width: 500 }}
+          sx={{ width: 300 }}
           multiple
           id='tags-standard'
-          options={allTagList.map((t) => t.tag_name)}
-          getOptionLabel={(option) => option}
+          options={allTagList.slice().sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+          groupBy={(option) => option.tag_category}
+          getOptionLabel={(option) => option.tag_name}
           renderInput={(params) => (
             <TextField
               {...params}

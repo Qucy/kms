@@ -147,8 +147,9 @@ export default function TitlebarImageList() {
           sx={{ width: 500 }}
           multiple
           id='tags-standard'
-          options={allTagList.map((t) => t.tag_name)}
-          getOptionLabel={(option) => option}
+          options={allTagList.slice().sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+          groupBy={(option) => option.tag_category}
+          getOptionLabel={(option) => option.tag_name}
           renderInput={(params) => (
             <TextField
               {...params}

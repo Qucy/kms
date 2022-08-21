@@ -305,8 +305,9 @@ export default function NewCampaign({
             multiple
             onChange={onSelectTags}
             id='tags-standard'
-            options={allTagList}
-            getOptionLabel={(option) => option['tag_name']}
+            options={allTagList.slice().sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+            groupBy={(option) => option.tag_category}
+            getOptionLabel={(option) => option.tag_name}
             renderInput={(params) => (
               <TextField {...params} variant='standard' label='Tags' placeholder='Tags' />
             )}
