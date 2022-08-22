@@ -16,7 +16,7 @@ import {
   FormControl,
   Autocomplete,
   TextField,
-  Divider
+  Divider,
 } from '@mui/material';
 
 import Grid from '@mui/material/Grid';
@@ -28,7 +28,6 @@ import NewCampaign from './NewCampaign';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
 import {
-  setCampaignList,
   setCampaignDetail,
   campaignSliceSelector,
 } from '../../hooks/campaign/campaignSlice';
@@ -36,10 +35,10 @@ import {
 export default function Campaign() {
   const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
 
-  const dropDownOption = React.useRef(0)
-  const [messageType, setMessageType] = React.useState("All Message Type");
-  const [companyName, setCompanyName] = React.useState("All Companies");
-  const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState("All Campaign")
+  const dropDownOption = React.useRef(0);
+  const [messageType, setMessageType] = React.useState('All Message Type');
+  const [companyName, setCompanyName] = React.useState('All Companies');
+  const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState('All Campaign');
 
   const [campaigns, setCampaigns] = React.useState([]);
 
@@ -48,11 +47,11 @@ export default function Campaign() {
 
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const [imageSource, setImageSource] = React.useState('DEFAULT')
+  const [imageSource, setImageSource] = React.useState('DEFAULT');
 
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
 
-  const updateCampaignDetail = (d) => dispatch(setCampaignDetail(d));
+  const updateCampaignDetail = async (d) => dispatch(setCampaignDetail(d));
 
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
@@ -67,8 +66,10 @@ export default function Campaign() {
 
       if (response.status === 200) {
         setCampaigns(response.data);
-        dropDownOption.messageType = [...new Set(response.data.map(a => a.message_type))]
-        dropDownOption.companyName = [...new Set(response.data.map(a => a.company))]
+        dropDownOption.messageType = [
+          ...new Set(response.data.map((a) => a.message_type)),
+        ];
+        dropDownOption.companyName = [...new Set(response.data.map((a) => a.company))];
         setIsLoading(false);
       }
     } catch (e) {
@@ -82,8 +83,10 @@ export default function Campaign() {
       const response = await API_CAMPAIGN.getFilteredCampaigns(tag_names);
       if (response.status === 200) {
         setCampaigns(response.data);
-        dropDownOption.messageType = [...new Set(response.data.map(a => a.message_type))]
-        dropDownOption.companyName = [...new Set(response.data.map(a => a.company))]
+        dropDownOption.messageType = [
+          ...new Set(response.data.map((a) => a.message_type)),
+        ];
+        dropDownOption.companyName = [...new Set(response.data.map((a) => a.company))];
         setIsLoading(false);
       }
     } catch (error) {
@@ -93,15 +96,13 @@ export default function Campaign() {
 
   // search function for image list
   const onSearch = async (event, value) => {
-     if ((Array.isArray(value) && value.length) === 0) {
-      fetchCampaigns()
-     }
-     else {
-      value = Object.keys(value).map((key) => value[key].tag_name)
+    if ((Array.isArray(value) && value.length) === 0) {
+      fetchCampaigns();
+    } else {
+      value = Object.keys(value).map((key) => value[key].tag_name);
       fetchFilteredCampaigns(value);
-      
     }
-    };
+  };
 
   React.useEffect(() => {
     fetchCampaigns();
@@ -112,8 +113,8 @@ export default function Campaign() {
   };
 
   const onSelect = (e, d) => {
-    toggleDrawerOpen();
     updateCampaignDetail(d);
+    toggleDrawerOpen();
   };
 
   const handleCompanyNameChange = async (event) => {
@@ -122,16 +123,16 @@ export default function Campaign() {
       setIsLoading(true);
 
       // Extract the value selcted by the user
-      var companyName = event.target.value
+      var companyName = event.target.value;
 
       // Display the selected value
-      setCompanyName(companyName)
+      setCompanyName(companyName);
 
       // Special handling for default value
-      if (companyName === "All Companies") {
-        companyName = ""
+      if (companyName === 'All Companies') {
+        companyName = '';
       }
-      
+
       // Get data by calling the API endpoint
       const response = await API_CAMPAIGN.getCampaignsByCompanyName(companyName);
       if (response.status === 200) {
@@ -155,8 +156,8 @@ export default function Campaign() {
       setMessageType(messageType);
 
       // Special handling for default value
-      if (messageType === "All Message Type") {
-        messageType = ""
+      if (messageType === 'All Message Type') {
+        messageType = '';
       }
 
       // Get data by calling the API endpoint
@@ -182,8 +183,8 @@ export default function Campaign() {
       sethsbcvsNonHSBC(hsbcvsNonHSBC);
 
       // Special handling for default value
-      if (hsbcvsNonHSBC === "All Campaign") {
-        hsbcvsNonHSBC = ""
+      if (hsbcvsNonHSBC === 'All Campaign') {
+        hsbcvsNonHSBC = '';
       }
 
       // Get data by calling the API endpoint
@@ -228,19 +229,20 @@ export default function Campaign() {
       </Stack>
 
       <Stack
-          direction='row'
-          justifyContent='space-evenly'
-          alignItems='center'
-          sx={{ mb: 5, mt: 4 }}
-          divider={<Divider orientation="vertical" flexItem />}
+        direction='row'
+        justifyContent='space-evenly'
+        alignItems='center'
+        sx={{ mb: 5, mt: 4 }}
+        divider={<Divider orientation='vertical' flexItem />}
       >
-        
         <Autocomplete
           onChange={onSearch}
           sx={{ width: 300 }}
           multiple
           id='tags-standard'
-          options={allTagList.slice().sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+          options={allTagList
+            .slice()
+            .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
           groupBy={(option) => option.tag_category}
           getOptionLabel={(option) => option.tag_name}
           renderInput={(params) => (
@@ -253,60 +255,66 @@ export default function Campaign() {
           )}
         />
 
-        <FormControl >
-            <InputLabel id="company_label">Company</InputLabel>
-            <Select
-              labelId="company_label"
-              id="demo-compnay-select"
-              label="Company"
-              value={companyName}
-              onChange={handleCompanyNameChange}
-            >
-              {dropDownOption.companyName.map((d, i) =>
-              (
-                    <MenuItem key={i} value={d}>{d}</MenuItem>
-              )
-              )
-              }
-              <MenuItem key={999} value={"All Companies"}>{"All Companies"}</MenuItem>
-            </Select>
-          </FormControl>
+        <FormControl>
+          <InputLabel id='company_label'>Company</InputLabel>
+          <Select
+            labelId='company_label'
+            id='demo-compnay-select'
+            label='Company'
+            value={companyName}
+            onChange={handleCompanyNameChange}
+          >
+            {dropDownOption.companyName.map((d, i) => (
+              <MenuItem key={i} value={d}>
+                {d}
+              </MenuItem>
+            ))}
+            <MenuItem key={999} value={'All Companies'}>
+              {'All Companies'}
+            </MenuItem>
+          </Select>
+        </FormControl>
 
-          <FormControl>
-            <InputLabel id="message_type_label">Message Type</InputLabel>
-            <Select
-              labelId="message_type_label"
-              id="demo-message-type-select"
-              label="HSBC vs Non HSBC"
-              value={messageType}
-              onChange={handleMessageTypeChange}
-            >
-              {dropDownOption.messageType.map((d, i) =>
-              (
-                    <MenuItem key={i} value={d}>{d}</MenuItem>
-              )
-              )
-              }
-              <MenuItem key={999} value={"All Message Type"}>{"All Message Type"}</MenuItem>
-            </Select>
-          </FormControl>
-          
-          <FormControl>
-            <InputLabel id="hsbc_vs_non_hsbc_label">HSBC vs Non-HSBC</InputLabel>
-            <Select
-              labelId="hsbc_vs_non_hsbc_label"
-              id="demo-hsbc_vs_non_hsbc_label-select"
-              label="HSBC vs Non HSBC"
-              value={hsbcvsNonHSBC}
-              onChange={handleHSBCvsNonHSBCChange}
-            >
-              <MenuItem key={1} value={"All Campaign"}>{"All Campaign"}</MenuItem>
-              <MenuItem key={2} value={"HSBC"}>{"HSBC Campaign"}</MenuItem>
-              <MenuItem key={3} value={"Non-HSBC"}>{"Non-HSBC Campaign"}</MenuItem>
-            </Select>
-          </FormControl>
+        <FormControl>
+          <InputLabel id='message_type_label'>Message Type</InputLabel>
+          <Select
+            labelId='message_type_label'
+            id='demo-message-type-select'
+            label='HSBC vs Non HSBC'
+            value={messageType}
+            onChange={handleMessageTypeChange}
+          >
+            {dropDownOption.messageType.map((d, i) => (
+              <MenuItem key={i} value={d}>
+                {d}
+              </MenuItem>
+            ))}
+            <MenuItem key={999} value={'All Message Type'}>
+              {'All Message Type'}
+            </MenuItem>
+          </Select>
+        </FormControl>
 
-
+        <FormControl>
+          <InputLabel id='hsbc_vs_non_hsbc_label'>HSBC vs Non-HSBC</InputLabel>
+          <Select
+            labelId='hsbc_vs_non_hsbc_label'
+            id='demo-hsbc_vs_non_hsbc_label-select'
+            label='HSBC vs Non HSBC'
+            value={hsbcvsNonHSBC}
+            onChange={handleHSBCvsNonHSBCChange}
+          >
+            <MenuItem key={1} value={'All Campaign'}>
+              {'All Campaign'}
+            </MenuItem>
+            <MenuItem key={2} value={'HSBC'}>
+              {'HSBC Campaign'}
+            </MenuItem>
+            <MenuItem key={3} value={'Non-HSBC'}>
+              {'Non-HSBC Campaign'}
+            </MenuItem>
+          </Select>
+        </FormControl>
       </Stack>
 
       <Stack>
@@ -326,7 +334,7 @@ export default function Campaign() {
                   onClick={(evt) =>
                     onSelect(evt, {
                       campaignId: d.id,
-                      company: d.company,
+                      companyName: d.company,
                       classification: d.hsbc_vs_non_hsbc,
                       location: d.location,
                       messageType: d.message_type,
@@ -370,9 +378,9 @@ export default function Campaign() {
         </Grid>
       </Stack>
       <CampaignDetail
+        campaignDetail={campaignDetail}
         open={isDetailDrawerOpen}
         onClose={onDrawerClose}
-        campaignDetail={campaignDetail}
       />
       <NewCampaign
         open={isDialogOpen}
