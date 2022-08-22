@@ -74,10 +74,17 @@ export const API_CAMPAIGN = {
     };
     return fetchRequest(config);
   },
-  getFilteredCampaigns: async (tag_names = '') => {
+  getFilteredCampaignsbyTagNames: async (tag_names = '') => {
     const config = {
       method: 'get',
       url: `/campaign/?tag_names=${tag_names}`,
+    };
+    return fetchRequest(config);
+  },
+  getFilteredCampaigns: async (tag_names = '', message_type = '', hsbc_vs_non_hsbc = '', companyName = '') => {
+    const config = {
+      method: 'get',
+      url: `/campaign/?tag_names=${tag_names}&message_type=${message_type}&hsbc_vs_non_hsbc=${hsbc_vs_non_hsbc}&company=${companyName}`,
     };
     return fetchRequest(config);
   },
