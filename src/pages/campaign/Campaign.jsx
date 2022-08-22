@@ -36,9 +36,10 @@ export default function Campaign() {
   const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
 
   const dropDownOption = React.useRef(0);
-  const [messageType, setMessageType] = React.useState('All Message Type');
-  const [companyName, setCompanyName] = React.useState('All Companies');
-  const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState('All Campaign');
+  const [messageType, setMessageType] = React.useState('');
+  const [tagNames, settagNames] = React.useState('');
+  const [companyName, setCompanyName] = React.useState('');
+  const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState('');
 
   const [campaigns, setCampaigns] = React.useState([]);
 
@@ -80,7 +81,8 @@ export default function Campaign() {
   //function to retrieve all the images
   const fetchFilteredCampaigns = async (tag_names) => {
     try {
-      const response = await API_CAMPAIGN.getFilteredCampaigns(tag_names);
+      settagNames(tag_names);
+      const response = await API_CAMPAIGN.getFilteredCampaignsbyTagNames(tag_names);
       if (response.status === 200) {
         setCampaigns(response.data);
         dropDownOption.messageType = [
@@ -119,9 +121,6 @@ export default function Campaign() {
 
   const handleCompanyNameChange = async (event) => {
     try {
-      // Display the loading page
-      setIsLoading(true);
-
       // Extract the value selcted by the user
       var companyName = event.target.value;
 
@@ -134,10 +133,14 @@ export default function Campaign() {
       }
 
       // Get data by calling the API endpoint
-      const response = await API_CAMPAIGN.getCampaignsByCompanyName(companyName);
+      const response = await API_CAMPAIGN.getFilteredCampaigns(
+        tagNames,
+        messageType,
+        hsbcvsNonHSBC,
+        companyName
+      );
       if (response.status === 200) {
         setCampaigns(response.data);
-        setIsLoading(false);
       }
     } catch (e) {
       console.error(e);
@@ -146,9 +149,6 @@ export default function Campaign() {
 
   const handleMessageTypeChange = async (event) => {
     try {
-      // Display the loading page
-      setIsLoading(true);
-
       // Extract the value selcted by the user
       var messageType = event.target.value;
 
@@ -161,10 +161,14 @@ export default function Campaign() {
       }
 
       // Get data by calling the API endpoint
-      const response = await API_CAMPAIGN.getCampaignsByMessageType(messageType);
+      const response = await API_CAMPAIGN.getFilteredCampaigns(
+        tagNames,
+        messageType,
+        hsbcvsNonHSBC,
+        companyName
+      );
       if (response.status === 200) {
         setCampaigns(response.data);
-        setIsLoading(false);
       }
     } catch (e) {
       console.error(e);
@@ -173,9 +177,6 @@ export default function Campaign() {
 
   const handleHSBCvsNonHSBCChange = async (event) => {
     try {
-      // Display the loading page
-      setIsLoading(true);
-
       // Extract the value selcted by the user
       var hsbcvsNonHSBC = event.target.value;
 
@@ -188,10 +189,14 @@ export default function Campaign() {
       }
 
       // Get data by calling the API endpoint
-      const response = await API_CAMPAIGN.getCampaignsByHSBCvsNonHSBC(hsbcvsNonHSBC);
+      const response = await API_CAMPAIGN.getFilteredCampaigns(
+        tagNames,
+        messageType,
+        hsbcvsNonHSBC,
+        companyName
+      );
       if (response.status === 200) {
         setCampaigns(response.data);
-        setIsLoading(false);
       }
     } catch (e) {
       console.error(e);
@@ -262,6 +267,7 @@ export default function Campaign() {
             id='demo-compnay-select'
             label='Company'
             value={companyName}
+            sx={{ width: 200 }}
             onChange={handleCompanyNameChange}
           >
             {dropDownOption.companyName.map((d, i) => (
@@ -269,7 +275,7 @@ export default function Campaign() {
                 {d}
               </MenuItem>
             ))}
-            <MenuItem key={999} value={'All Companies'}>
+            <MenuItem key={999} value={''}>
               {'All Companies'}
             </MenuItem>
           </Select>
@@ -282,6 +288,7 @@ export default function Campaign() {
             id='demo-message-type-select'
             label='HSBC vs Non HSBC'
             value={messageType}
+            sx={{ width: 200 }}
             onChange={handleMessageTypeChange}
           >
             {dropDownOption.messageType.map((d, i) => (
@@ -289,7 +296,7 @@ export default function Campaign() {
                 {d}
               </MenuItem>
             ))}
-            <MenuItem key={999} value={'All Message Type'}>
+            <MenuItem key={999} value={''}>
               {'All Message Type'}
             </MenuItem>
           </Select>
@@ -302,9 +309,10 @@ export default function Campaign() {
             id='demo-hsbc_vs_non_hsbc_label-select'
             label='HSBC vs Non HSBC'
             value={hsbcvsNonHSBC}
+            sx={{ width: 200 }}
             onChange={handleHSBCvsNonHSBCChange}
           >
-            <MenuItem key={1} value={'All Campaign'}>
+            <MenuItem key={1} value={''}>
               {'All Campaign'}
             </MenuItem>
             <MenuItem key={2} value={'HSBC'}>
