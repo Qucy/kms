@@ -2,7 +2,15 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initalCampaignState = {
   campaignList: [],
-  campaignDetail: {},
+  campaignDetail: {
+    campaignId: null,
+    companyName: '',
+    classification: '',
+    location: '',
+    messageType: '',
+    responseRate: null,
+    tag: [],
+  },
   status: 'LOADING',
 };
 
