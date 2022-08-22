@@ -81,7 +81,12 @@ export const API_CAMPAIGN = {
     };
     return fetchRequest(config);
   },
-  getFilteredCampaigns: async (tag_names = '', message_type = '', hsbc_vs_non_hsbc = '', companyName = '') => {
+  getFilteredCampaigns: async (
+    tag_names = '',
+    message_type = '',
+    hsbc_vs_non_hsbc = '',
+    companyName = ''
+  ) => {
     const config = {
       method: 'get',
       url: `/campaign/?tag_names=${tag_names}&message_type=${message_type}&hsbc_vs_non_hsbc=${hsbc_vs_non_hsbc}&company=${companyName}`,
@@ -116,6 +121,21 @@ export const API_CAMPAIGN = {
       data: payload,
     };
     return fetchImageRequest(config);
+  },
+  editCampaign: async (id, payload) => {
+    const config = {
+      method: 'patch',
+      url: `/campaign/${id}/`,
+      data: JSON.stringify(payload),
+    };
+    return fetchRequest(config);
+  },
+  deleteCampaign: async (id) => {
+    const config = {
+      method: 'delete',
+      url: `/campaign/${id}/`,
+    };
+    return fetchRequest(config);
   },
 };
 
@@ -175,8 +195,7 @@ export const API_CAMPAIGNTAGLINK = {
       url: `/image-tag-link/?campaign_id=${campaign_id}`,
     };
     return fetchRequest(config);
-  }
-  ,
+  },
   getTagsByCampaignId: async (id) => {
     const config = {
       method: 'get',

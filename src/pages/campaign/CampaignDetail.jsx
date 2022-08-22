@@ -16,6 +16,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Popover,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
@@ -24,7 +25,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 
 import { IconLabel } from '../../components/common';
-import { API_IMAGE, API_CAMPAIGNTAGLINK } from '../../utils/api';
+import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
 
 function CampaignDetail({ campaignDetail, open, onClose }) {
   const [isEditing, setIsEditing] = React.useState(false);
@@ -37,6 +38,8 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
 
   const [editingDetail, setEditingDetail] = React.useState(null);
 
+  const [popoverEl, setPopoverEl] = React.useState(null);
+
   const toggleEditingState = () => setIsEditing((_prevState) => !_prevState);
 
   const onCancel = () => {
@@ -46,14 +49,61 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
     toggleEditingState();
   };
 
+  const onSave = () => {
+    const payload = {
+      id: editingDetail.campaignId,
+      company: editingDetail.companyName,
+      hsbc_vs_non_hsbc: editingDetail.classification,
+      location: editingDetail.location,
+      message_type: editingDetail.messageType,
+      response_rate: editingDetail.responseRate ? editingDetail.responseRate : null,
+    };
+
+    const editCampaign = async () => {
+      try {
+        const response = await API_CAMPAIGN.editCampaign(
+          editingDetail.campaignId,
+          payload
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    editCampaign();
+  };
+
+  const onDelete = (e) => {
+    //open confirmation dialog
+    setPopoverEl(e.currentTarget);
+  };
+
+  const onDeleteConfirm = () => {
+    const deleteCampaign = async () => {
+      try {
+        const response = await API_CAMPAIGN.deleteCampaign(campaignDetail.campaignId);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    deleteCampaign();
+  };
+
+  const onEdit = (e, t) => {
+    setEditingDetail((_prevState) => {
+      _prevState[t] = t === 'responseRate' ? Number(e.target.value) : e.target.value;
+
+      return {
+        ..._prevState,
+      };
+    });
+  };
+
   React.useEffect(() => {
     if (campaignDetail.campaignId && !editingDetail) {
-      console.log('enter');
       setEditingDetail(Object.assign({}, campaignDetail));
     }
   }, [campaignDetail, editingDetail]);
-
-  React.useEffect(() => console.log(editingDetail), [editingDetail]);
 
   React.useEffect(() => {
     const fetchTags = async (id) => {
@@ -86,16 +136,6 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
     fetchImages(campaignDetail.campaignId);
     fetchTags(campaignDetail.campaignId);
   }, [campaignDetail.campaignId]);
-
-  const onEdit = (e, t) => {
-    setEditingDetail((_prevState) => {
-      _prevState[t] = t === 'responseRate' ? Number(e.target.value) : e.target.value;
-
-      return {
-        ..._prevState,
-      };
-    });
-  };
 
   return (
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
@@ -167,7 +207,7 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
               onChange={(evt) => onEdit(evt, 'responseRate')}
             />
             <Stack direction='row' sx={{ py: 1 }} spacing={1}>
-              <Button variant='contained' size='small'>
+              <Button variant='contained' size='small' onClick={onSave}>
                 Save
               </Button>
               <Button variant='contained' size='small' onClick={onCancel}>
@@ -260,8 +300,35 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
 
             <Stack direction='row'>
               <Button onClick={() => setIsEditing(true)}>Edit</Button>
-              <Button>Delete</Button>
+              <Button onClick={onDelete}>Delete</Button>
             </Stack>
+            <Popover
+              open={Boolean(popoverEl)}
+              anchorEl={popoverEl}
+              onClose={() => setPopoverEl(null)}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+            >
+              <Stack sx={{ p: 2 }} direction='row' alignItems='center'>
+                <Typography variant='body1' sx={{ mr: 2 }}>
+                  Deletion of tag cannot be redo. Click "Confirm" to proceed.
+                </Typography>
+                <Stack direction='row' spacing={1} size='small'>
+                  <Button variant='contained' size='small' onClick={onDeleteConfirm}>
+                    Confirm
+                  </Button>
+                  <Button
+                    variant='contained'
+                    size='small'
+                    onClick={() => setPopoverEl(null)}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
+              </Stack>
+            </Popover>
           </Stack>
         )}
       </Box>
