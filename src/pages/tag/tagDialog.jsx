@@ -36,15 +36,12 @@ export default function TagDialog(props) {
     const updateTag = async (id, t, callback) => {
       const resUpdateTag = await API_TAG.updateTag(id, t);
       const { original_tag_name: oldTagName } = resUpdateTag.data;
-      console.log(oldTagName);
 
       if (resUpdateTag.status === 200) {
         const resPatchTagName = await API_IMAGETAGLINK.updateTagNames({
           tag_name: oldTagName,
           new_tag_name: t.tag_name,
         });
-
-        console.log(resPatchTagName);
 
         if (resPatchTagName.status === 200) {
           dispatch(setButtonStatus('SUCCESS'));

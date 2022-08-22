@@ -118,7 +118,6 @@ export default function NewCampaign({
 
         try {
           const response = await API_IMAGE.createImage(imageObj);
-          console.log(response);
 
           if (response.status === 200) {
             numOfSuccess++;
