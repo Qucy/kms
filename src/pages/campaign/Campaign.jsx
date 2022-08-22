@@ -387,6 +387,7 @@ export default function Campaign() {
         campaignDetail={campaignDetail}
         open={isDetailDrawerOpen}
         onClose={onDrawerClose}
+        fetchCampaigns={fetchCampaigns}
       />
       <NewCampaign
         open={isDialogOpen}

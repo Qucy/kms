@@ -26,9 +26,11 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 
 import { IconLabel } from '../../components/common';
 import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
+import { LoadingButton } from '@mui/lab';
 
-function CampaignDetail({ campaignDetail, open, onClose }) {
+function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
   const [isEditing, setIsEditing] = React.useState(false);
+  const [loadingEl, setLoadingEl] = React.useState(false);
 
   const [images, setImages] = React.useState([]);
   const [tags, setTags] = React.useState([]);
@@ -49,7 +51,9 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
     toggleEditingState();
   };
 
-  const onSave = () => {
+  const onSave = async () => {
+    setLoadingEl('EDIT');
+
     const payload = {
       id: editingDetail.campaignId,
       company: editingDetail.companyName,
@@ -65,12 +69,21 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
           editingDetail.campaignId,
           payload
         );
+
+        return response.status;
       } catch (e) {
         console.error(e);
       }
     };
 
-    editCampaign();
+    const resStatus = await editCampaign();
+
+    if (resStatus === 200) {
+      setLoadingEl('');
+      setTimeout(() => setIsEditing(false), 500);
+      setTimeout(onClose, 1000);
+      setTimeout(fetchCampaigns, 2000);
+    }
   };
 
   const onDelete = (e) => {
@@ -78,15 +91,26 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
     setPopoverEl(e.currentTarget);
   };
 
-  const onDeleteConfirm = () => {
+  const onDeleteConfirm = async () => {
+    setLoadingEl('DELETE');
+
     const deleteCampaign = async () => {
       try {
         const response = await API_CAMPAIGN.deleteCampaign(campaignDetail.campaignId);
+        return response.status;
       } catch (e) {
         console.error(e);
       }
     };
-    deleteCampaign();
+    const resStatus = await deleteCampaign();
+
+    if (resStatus === 204) {
+      setLoadingEl('');
+      setTimeout(() => setPopoverEl(null), 500);
+      setTimeout(() => setIsEditing(false), 1000);
+      setTimeout(onClose, 1500);
+      setTimeout(fetchCampaigns, 2000);
+    }
   };
 
   const onEdit = (e, t) => {
@@ -207,9 +231,14 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
               onChange={(evt) => onEdit(evt, 'responseRate')}
             />
             <Stack direction='row' sx={{ py: 1 }} spacing={1}>
-              <Button variant='contained' size='small' onClick={onSave}>
+              <LoadingButton
+                loading={loadingEl === 'EDIT'}
+                variant='contained'
+                size='small'
+                onClick={onSave}
+              >
                 Save
-              </Button>
+              </LoadingButton>
               <Button variant='contained' size='small' onClick={onCancel}>
                 Cancel
               </Button>
@@ -316,9 +345,14 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
                   Deletion of tag cannot be redo. Click "Confirm" to proceed.
                 </Typography>
                 <Stack direction='row' spacing={1} size='small'>
-                  <Button variant='contained' size='small' onClick={onDeleteConfirm}>
+                  <LoadingButton
+                    loading={loadingEl === 'DELETE'}
+                    variant='contained'
+                    size='small'
+                    onClick={onDeleteConfirm}
+                  >
                     Confirm
-                  </Button>
+                  </LoadingButton>
                   <Button
                     variant='contained'
                     size='small'
