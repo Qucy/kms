@@ -63,11 +63,10 @@ export default function Dashboard() {
         const response = await API_TAG.getAllTags();
 
         if (response.status === 200) {
-          var res = response.data
+          var res = response.data;
 
           var items = Object.keys(res).map((key) => response.data[key]);
 
-          console.log(items)
           dispatch(setAllTagList(response.data));
         }
       } catch (error) {
