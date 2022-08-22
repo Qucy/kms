@@ -182,8 +182,6 @@ export default function NewCampaign({
     // return () => URL.revokeObjectURL(objectUrl) TODO
   }, [uploadedImages]);
 
-  React.useEffect(() => console.log(uploadedImages), [uploadedImages]);
-
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>New Campaign</DialogTitle>
@@ -272,7 +270,7 @@ export default function NewCampaign({
               onChange={(evt) => onNewCampaignChange(evt, 'messageType')}
               label='Message Type'
             >
-              <MenuItem value={'MBM Banner'}>MGM Banner</MenuItem>
+              <MenuItem value={'MGM Banner'}>MGM Banner</MenuItem>
               <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
               <MenuItem value={'PWS Banner'}>PWS Banner</MenuItem>
               <MenuItem value={'FB Banner'}>FB Banner</MenuItem>
@@ -305,7 +303,9 @@ export default function NewCampaign({
             multiple
             onChange={onSelectTags}
             id='tags-standard'
-            options={allTagList.slice().sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+            options={allTagList
+              .slice()
+              .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
             groupBy={(option) => option.tag_category}
             getOptionLabel={(option) => option.tag_name}
             renderInput={(params) => (

@@ -26,20 +26,30 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import { IconLabel } from '../../components/common';
 import { API_IMAGE, API_CAMPAIGNTAGLINK } from '../../utils/api';
 
-export default function CampaignDetail({ campaignDetail, open, onClose }) {
-  const { campaignId, company, classification, location, messageType, responseRate } =
-    campaignDetail;
-
-  const [isTagLoading, setIsTagLoading] = React.useState(false);
-  const [isImageLoading, setIsImageLoading] = React.useState(false);
-
+function CampaignDetail({ campaignDetail, open, onClose }) {
   const [isEditing, setIsEditing] = React.useState(false);
 
   const [images, setImages] = React.useState([]);
   const [tags, setTags] = React.useState([]);
 
+  const [isTagLoading, setIsTagLoading] = React.useState(false);
+  const [isImageLoading, setIsImageLoading] = React.useState(false);
+
+  const [editingDetail, setEditingDetail] = React.useState(null);
+
   React.useEffect(() => {
-    const fetchTag = async (id) => {
+    console.log(!editingDetail);
+
+    if (campaignDetail.campaignId && !editingDetail) {
+      console.log('enter');
+      setEditingDetail(campaignDetail);
+    }
+  }, [campaignDetail, editingDetail]);
+
+  console.log(editingDetail);
+
+  React.useEffect(() => {
+    const fetchTags = async (id) => {
       try {
         const response = await API_CAMPAIGNTAGLINK.getTagsByCampaignId(id);
         if (response.status === 200) {
@@ -66,9 +76,19 @@ export default function CampaignDetail({ campaignDetail, open, onClose }) {
     setIsTagLoading(true);
     setIsTagLoading(false);
 
-    fetchImages(campaignId);
-    fetchTag(campaignId);
-  }, [campaignId]);
+    fetchImages(campaignDetail.campaignId);
+    fetchTags(campaignDetail.campaignId);
+  }, [campaignDetail.campaignId]);
+
+  const onEdit = (e, t) => {
+    setEditingDetail((_prevState) => {
+      _prevState[t] = t === 'responseRate' ? Number(e.target.value) : e.target.value;
+
+      return {
+        ..._prevState,
+      };
+    });
+  };
 
   return (
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
@@ -83,15 +103,17 @@ export default function CampaignDetail({ campaignDetail, open, onClose }) {
               type='text'
               fullWidth
               variant='standard'
-              value={campaignDetail.company}
+              value={editingDetail.companyName}
+              onChange={(evt) => onEdit(evt, 'companyName')}
             />
             <FormControl variant='standard' fullWidth required>
               <InputLabel id='new-campaign-location'>Location</InputLabel>
               <Select
                 labelId='new-campaign-location-label-id'
                 id='new-campaign-location-id'
-                value={campaignDetail.location}
+                value={editingDetail.location}
                 label='Location'
+                onChange={(evt) => onEdit(evt, 'location')}
               >
                 <MenuItem value={'HK'}>HK</MenuItem>
                 <MenuItem value={'UK'}>UK</MenuItem>
@@ -102,8 +124,9 @@ export default function CampaignDetail({ campaignDetail, open, onClose }) {
               <Select
                 labelId='new-campaign-classification-label-id'
                 id='new-campaign-classification-id'
-                value={campaignDetail.classification}
+                value={editingDetail.classification}
                 label='Classification'
+                onChange={(evt) => onEdit(evt, 'classification')}
               >
                 <MenuItem value={'HSBC'}>HSBC</MenuItem>
                 <MenuItem value={'Non-HSBC'}>Non-HSBC</MenuItem>
@@ -114,10 +137,11 @@ export default function CampaignDetail({ campaignDetail, open, onClose }) {
               <Select
                 labelId='new-campaign-messageType-label-id'
                 id='new-campaign-messageType-id'
-                value={campaignDetail.messageType}
+                value={editingDetail.messageType}
                 label='Message Type'
+                onChange={(evt) => onEdit(evt, 'messageType')}
               >
-                <MenuItem value={'MBM Banner'}>MGM Banner</MenuItem>
+                <MenuItem value={'MGM Banner'}>MGM Banner</MenuItem>
                 <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
                 <MenuItem value={'PWS Banner'}>PWS Banner</MenuItem>
                 <MenuItem value={'FB Banner'}>FB Banner</MenuItem>
@@ -133,13 +157,14 @@ export default function CampaignDetail({ campaignDetail, open, onClose }) {
               type='number'
               fullWidth
               variant='standard'
+              onChange={(evt) => onEdit(evt, 'responseRate')}
             />
           </Stack>
         ) : (
           <Stack direction='column' justifyContent='space-between'>
             <Stack sx={{ mb: 2 }}>
               <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                <Typography variant='h4'>{campaignDetail.company}</Typography>
+                <Typography variant='h4'>{campaignDetail.companyName}</Typography>
                 <IconButton aria-label='close' color='primary' onClick={onClose}>
                   <CloseIcon />
                 </IconButton>
@@ -228,3 +253,5 @@ export default function CampaignDetail({ campaignDetail, open, onClose }) {
     </Drawer>
   );
 }
+
+export default CampaignDetail;
