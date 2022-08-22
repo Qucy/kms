@@ -55,7 +55,7 @@ const Header = (props) => {
             noWrap
             sx={{ flexGrow: 1 }}
         >
-            Knowledge management system
+            CLCM Campaign Library
         </Typography>
         </Toolbar>
     </AppBar>
