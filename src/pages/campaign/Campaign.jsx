@@ -33,7 +33,9 @@ import {
 } from '../../hooks/campaign/campaignSlice';
 
 export default function Campaign() {
+  const allTagList = useSelector(tagSliceSelector.allTagList);
   const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
+  const dispatch = useDispatch();
 
   const dropDownOption = React.useRef(0);
   const [messageType, setMessageType] = React.useState('');
@@ -52,13 +54,9 @@ export default function Campaign() {
 
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
 
-  const updateCampaignDetail = async (d) => dispatch(setCampaignDetail(d));
-
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
-  const allTagList = useSelector(tagSliceSelector.allTagList);
-
-  const dispatch = useDispatch();
+  const updateCampaignDetail = async (d) => dispatch(setCampaignDetail(d));
 
   const fetchCampaigns = async () => {
     setIsLoading(true);

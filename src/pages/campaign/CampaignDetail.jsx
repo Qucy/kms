@@ -37,16 +37,23 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
 
   const [editingDetail, setEditingDetail] = React.useState(null);
 
-  React.useEffect(() => {
-    console.log(!editingDetail);
+  const toggleEditingState = () => setIsEditing((_prevState) => !_prevState);
 
+  const onCancel = () => {
+    //TODO: replace the following logic with Reference
+    setEditingDetail(Object.assign({}, campaignDetail));
+
+    toggleEditingState();
+  };
+
+  React.useEffect(() => {
     if (campaignDetail.campaignId && !editingDetail) {
       console.log('enter');
-      setEditingDetail(campaignDetail);
+      setEditingDetail(Object.assign({}, campaignDetail));
     }
   }, [campaignDetail, editingDetail]);
 
-  console.log(editingDetail);
+  React.useEffect(() => console.log(editingDetail), [editingDetail]);
 
   React.useEffect(() => {
     const fetchTags = async (id) => {
@@ -159,6 +166,14 @@ function CampaignDetail({ campaignDetail, open, onClose }) {
               variant='standard'
               onChange={(evt) => onEdit(evt, 'responseRate')}
             />
+            <Stack direction='row' sx={{ py: 1 }} spacing={1}>
+              <Button variant='contained' size='small'>
+                Save
+              </Button>
+              <Button variant='contained' size='small' onClick={onCancel}>
+                Cancel
+              </Button>
+            </Stack>
           </Stack>
         ) : (
           <Stack direction='column' justifyContent='space-between'>
