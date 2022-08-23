@@ -11,7 +11,7 @@ const initalCampaignState = {
     responseRate: null,
     tag: [],
   },
-  status: 'LOADING',
+  status: 'LOADING', // LOADING, SUCCESS, ERROR, IDLE
 };
 
 export const campaignSlice = createSlice({
