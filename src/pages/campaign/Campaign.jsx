@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-
 import {
   Card,
   CardContent,
@@ -17,82 +16,209 @@ import {
   Autocomplete,
   TextField,
   Divider,
+  Alert,
+  Grid,
 } from '@mui/material';
-
-import Grid from '@mui/material/Grid';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 
+import { asyncFuncHandler } from '../../utils/handler';
 import { API_CAMPAIGN } from '../../utils/api';
-import CampaignDetail from './CampaignDetail';
-import NewCampaign from './NewCampaign';
-import { tagSliceSelector } from '../../hooks/tag/tagSlice';
-
 import {
+  setCampaignList,
   setCampaignDetail,
+  setMessageFilter,
+  setClassificationFilter,
+  setCompanyFilter,
+  setStatus,
   campaignSliceSelector,
 } from '../../hooks/campaign/campaignSlice';
+import { tagSliceSelector } from '../../hooks/tag/tagSlice';
+import CampaignDetail from './CampaignDetail';
+import NewCampaign from './NewCampaign';
 
 export default function Campaign() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
   const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
+  const campaignList = useSelector(campaignSliceSelector.campaignList);
+  const filter = useSelector(campaignSliceSelector.filter);
+  const status = useSelector(campaignSliceSelector.status);
   const dispatch = useDispatch();
 
   const dropDownOption = React.useRef(0);
-  const [messageType, setMessageType] = React.useState('');
-  const [tagNames, settagNames] = React.useState('');
-  const [companyName, setCompanyName] = React.useState('');
-  const [hsbcvsNonHSBC, sethsbcvsNonHSBC] = React.useState('');
-
-  const [campaigns, setCampaigns] = React.useState([]);
+  const [tagNames, setTagNames] = React.useState('');
+  // const [messageType, setMessageType] = React.useState('');
+  // const [companyName, setCompanyName] = React.useState('');
+  // const [hsbcvsNonHSBC, setHsbcvsNonHSBC] = React.useState('');
 
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-
-  const [isLoading, setIsLoading] = React.useState(true);
+  const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
+  const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
 
   const [imageSource, setImageSource] = React.useState('DEFAULT');
 
-  const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
-
-  const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
-
-  const updateCampaignDetail = async (d) => dispatch(setCampaignDetail(d));
-
   const fetchCampaigns = async () => {
-    setIsLoading(true);
-    try {
-      const response = await API_CAMPAIGN.getAllCampaigns();
+    dispatch(setStatus('LOADING'));
 
-      if (response.status === 200) {
-        setCampaigns(response.data);
-        dropDownOption.messageType = [
-          ...new Set(response.data.map((a) => a.message_type)),
-        ];
-        dropDownOption.companyName = [...new Set(response.data.map((a) => a.company))];
-        setIsLoading(false);
-      }
-    } catch (e) {
-      console.error(e);
+    const [response, error] = await asyncFuncHandler(API_CAMPAIGN.getAllCampaigns);
+
+    if (response && response.statusText === 'OK') {
+      dispatch(setCampaignList(response.data));
+      dropDownOption.messageType = [...new Set(response.data.map((a) => a.message_type))];
+      dropDownOption.companyName = [...new Set(response.data.map((a) => a.company))];
+      dispatch(setStatus('SUCCESS'));
+    }
+
+    if (error) {
+      dispatch(setStatus('ERROR'));
+      console.error(error);
     }
   };
 
   //function to retrieve all the images
   const fetchFilteredCampaigns = async (tag_names) => {
-    try {
-      settagNames(tag_names);
-      const response = await API_CAMPAIGN.getFilteredCampaignsbyTagNames(tag_names);
-      if (response.status === 200) {
-        setCampaigns(response.data);
-        dropDownOption.messageType = [
-          ...new Set(response.data.map((a) => a.message_type)),
-        ];
-        dropDownOption.companyName = [...new Set(response.data.map((a) => a.company))];
-        setIsLoading(false);
-      }
-    } catch (error) {
+    setTagNames(tag_names);
+
+    const [response, error] = await asyncFuncHandler(() =>
+      API_CAMPAIGN.getFilteredCampaignsbyTagNames(tag_names)
+    );
+
+    if (response && response.statusText === 'OK') {
+      dispatch(setCampaignList(response.data));
+      dropDownOption.messageType = [...new Set(response.data.map((a) => a.message_type))];
+      dropDownOption.companyName = [...new Set(response.data.map((a) => a.company))];
+    }
+
+    if (error) {
+      dispatch(setStatus('ERROR'));
       console.error(error);
     }
   };
+
+  const handleFilterChange = async (event, target) => {
+    let payload = {
+      tag_names: tagNames,
+      message_type: filter.messageType,
+      hsbc_vs_non_hsbc: filter.hsbcvsNonHSBC,
+      companyName: filter.companyName,
+    };
+
+    switch (target) {
+      case 'messageType':
+        dispatch(setMessageFilter(event.target.value));
+        const _messageType =
+          event.target.value === 'All Message Type' ? '' : event.target.value;
+        payload['message_type'] = _messageType;
+        break;
+      case 'companyName':
+        dispatch(setCompanyFilter(event.target.value));
+        const _companyName =
+          event.target.value === 'All Companies' ? '' : event.target.value;
+        payload['companyName'] = _companyName;
+        break;
+      case 'classification':
+        dispatch(setClassificationFilter(event.target.value));
+        const _classification =
+          event.target.value === 'All Campaign' ? '' : event.target.value;
+        payload['hsbc_vs_non_hsbc'] = _classification;
+        break;
+      default:
+        break;
+    }
+
+    const [response, error] = await asyncFuncHandler(() =>
+      API_CAMPAIGN.getFilteredCampaigns(payload)
+    );
+
+    if (response && response.statusText === 'OK') {
+      dispatch(setCampaignList(response.data));
+    }
+
+    if (error) {
+      dispatch(setStatus('ERROR'));
+      console.error(error);
+    }
+  };
+
+  // const handleCompanyNameChange = async (event) => {
+  //   try {
+  //     // Extract the value selcted by the user
+  //     var companyName = event.target.value;
+
+  //     // Display the selected value
+  //     setCompanyName(companyName);
+
+  //     // Special handling for default value
+  //     if (companyName === 'All Companies') {
+  //       companyName = '';
+  //     }
+
+  //     // Get data by calling the API endpoint
+  //     const response = await API_CAMPAIGN.getFilteredCampaigns(
+  //       tagNames,
+  //       messageType,
+  //       hsbcvsNonHSBC,
+  //       companyName
+  //     );
+  //     if (response.status === 200) {
+  //       dispatch(setCampaignList(response.data));
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
+
+  // const handleMessageTypeChange = async (event) => {
+  //   try {
+  //     // Extract the value selcted by the user
+  //     var messageType = event.target.value;
+
+  //     // Display the selected value
+  //     setMessageType(messageType);
+
+  //     // Special handling for default value
+  //     if (messageType === 'All Message Type') {
+  //       messageType = '';
+  //     }
+
+  //     // Get data by calling the API endpoint
+  //     const response = await API_CAMPAIGN.getFilteredCampaigns(
+  //       tagNames,
+  //       messageType,
+  //       hsbcvsNonHSBC,
+  //       companyName
+  //     );
+  //     if (response.status === 200) {
+  //       dispatch(setCampaignList(response.data));
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
+
+  // const handleHSBCvsNonHSBCChange = async (event) => {
+  //   setHsbcvsNonHSBC(event.target.value);
+
+  //   const _hsbcvsNonHSBC =
+  //     event.target.value === 'All Campaign' ? '' : event.target.value;
+  //   const [response, error] = await asyncFuncHandler(() =>
+  //     API_CAMPAIGN.getFilteredCampaigns(
+  //       tagNames,
+  //       messageType,
+  //       _hsbcvsNonHSBC,
+  //       companyName
+  //     )
+  //   );
+
+  //   if (response && response.statusText === 'OK') {
+  //     dispatch(setCampaignList(response.data));
+  //   }
+
+  //   if (error) {
+  //     dispatch(setStatus('ERROR'));
+  //     console.error(error);
+  //   }
+  // };
 
   // search function for image list
   const onSearch = async (event, value) => {
@@ -104,110 +230,40 @@ export default function Campaign() {
     }
   };
 
-  React.useEffect(() => {
-    fetchCampaigns();
-  }, []);
-
-  const onNewCampaign = () => {
-    toggleDialogOpen();
-  };
-
-  const onSelect = (e, d) => {
-    updateCampaignDetail(d);
+  const onSelect = (d) => {
+    dispatch(setCampaignDetail(d));
     toggleDrawerOpen();
-  };
-
-  const handleCompanyNameChange = async (event) => {
-    try {
-      // Extract the value selcted by the user
-      var companyName = event.target.value;
-
-      // Display the selected value
-      setCompanyName(companyName);
-
-      // Special handling for default value
-      if (companyName === 'All Companies') {
-        companyName = '';
-      }
-
-      // Get data by calling the API endpoint
-      const response = await API_CAMPAIGN.getFilteredCampaigns(
-        tagNames,
-        messageType,
-        hsbcvsNonHSBC,
-        companyName
-      );
-      if (response.status === 200) {
-        setCampaigns(response.data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleMessageTypeChange = async (event) => {
-    try {
-      // Extract the value selcted by the user
-      var messageType = event.target.value;
-
-      // Display the selected value
-      setMessageType(messageType);
-
-      // Special handling for default value
-      if (messageType === 'All Message Type') {
-        messageType = '';
-      }
-
-      // Get data by calling the API endpoint
-      const response = await API_CAMPAIGN.getFilteredCampaigns(
-        tagNames,
-        messageType,
-        hsbcvsNonHSBC,
-        companyName
-      );
-      if (response.status === 200) {
-        setCampaigns(response.data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleHSBCvsNonHSBCChange = async (event) => {
-    try {
-      // Extract the value selcted by the user
-      var hsbcvsNonHSBC = event.target.value;
-
-      // Display the selected value
-      sethsbcvsNonHSBC(hsbcvsNonHSBC);
-
-      // Special handling for default value
-      if (hsbcvsNonHSBC === 'All Campaign') {
-        hsbcvsNonHSBC = '';
-      }
-
-      // Get data by calling the API endpoint
-      const response = await API_CAMPAIGN.getFilteredCampaigns(
-        tagNames,
-        messageType,
-        hsbcvsNonHSBC,
-        companyName
-      );
-      if (response.status === 200) {
-        setCampaigns(response.data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
   };
 
   const onDrawerClose = React.useCallback(() => {
     toggleDrawerOpen();
-    updateCampaignDetail({});
+    dispatch(setCampaignDetail({}));
   }, []);
 
-  if (isLoading) {
-    return <CircularProgress />;
+  React.useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  React.useEffect(() => {
+    return () => dispatch(setStatus('IDLE'));
+  }, []);
+
+  if (status === 'LOADING') {
+    return (
+      <Stack alignItems='center' justifyContent='center'>
+        <CircularProgress />
+      </Stack>
+    );
+  }
+
+  if (status === 'ERROR') {
+    return (
+      <Stack alignItems='center' justifyContent='center'>
+        <Alert sx={{ width: '100%' }} severity='error'>
+          Something went wrong.
+        </Alert>
+      </Stack>
+    );
   }
 
   return (
@@ -225,7 +281,7 @@ export default function Campaign() {
         <Button
           variant='contained'
           startIcon={<AddOutlinedIcon />}
-          onClick={onNewCampaign}
+          onClick={toggleDialogOpen}
         >
           New Campaign
         </Button>
@@ -264,9 +320,10 @@ export default function Campaign() {
             labelId='company_label'
             id='demo-compnay-select'
             label='Company'
-            value={companyName}
+            value={filter.companyName}
             sx={{ width: 200 }}
-            onChange={handleCompanyNameChange}
+            // onChange={handleCompanyNameChange}
+            onChange={(evt) => handleFilterChange(evt, 'companyName')}
           >
             {dropDownOption.companyName.map((d, i) => (
               <MenuItem key={i} value={d}>
@@ -284,10 +341,11 @@ export default function Campaign() {
           <Select
             labelId='message_type_label'
             id='demo-message-type-select'
-            label='HSBC vs Non HSBC'
-            value={messageType}
+            label='Message Type'
+            value={filter.messageType}
             sx={{ width: 200 }}
-            onChange={handleMessageTypeChange}
+            // onChange={handleMessageTypeChange}
+            onChange={(evt) => handleFilterChange(evt, 'messageType')}
           >
             {dropDownOption.messageType.map((d, i) => (
               <MenuItem key={i} value={d}>
@@ -306,9 +364,10 @@ export default function Campaign() {
             labelId='hsbc_vs_non_hsbc_label'
             id='demo-hsbc_vs_non_hsbc_label-select'
             label='HSBC vs Non HSBC'
-            value={hsbcvsNonHSBC}
+            value={filter.hsbcvsNonHSBC}
             sx={{ width: 200 }}
-            onChange={handleHSBCvsNonHSBCChange}
+            //onChange={handleHSBCvsNonHSBCChange}
+            onChange={(evt) => handleFilterChange(evt, 'classification')}
           >
             <MenuItem key={1} value={''}>
               {'All Campaign'}
@@ -325,7 +384,7 @@ export default function Campaign() {
 
       <Stack>
         <Grid container spacing={2} columns={{ sm: 4, md: 8, lg: 10 }}>
-          {campaigns.map((d, i) => (
+          {campaignList.map((d, i) => (
             <Grid item xs={1} md={2} lg={2} key={i}>
               <Card
                 key={i}
@@ -337,8 +396,8 @@ export default function Campaign() {
                 }}
               >
                 <CardActionArea
-                  onClick={(evt) =>
-                    onSelect(evt, {
+                  onClick={() =>
+                    onSelect({
                       campaignId: d.id,
                       companyName: d.company,
                       classification: d.hsbc_vs_non_hsbc,
@@ -393,7 +452,7 @@ export default function Campaign() {
         open={isDialogOpen}
         onClose={toggleDialogOpen}
         onCancel={toggleDialogOpen}
-        setIsLoading={setIsLoading}
+        setIsLoading={() => dispatch(setStatus('LOADING'))}
         fetchCampaigns={fetchCampaigns}
       />
     </React.Fragment>
