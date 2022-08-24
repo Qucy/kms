@@ -123,14 +123,14 @@ export default function Tags() {
               <TableCell>{tag.tag_category}</TableCell>
               <TableCell>{tag.create_by}</TableCell>
               <TableCell>
-                <Tooltip title='Delete'>
-                  <IconButton onClick={(e) => onDeleteTag(e, tag)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
                 <Tooltip title='Edit'>
                   <IconButton onClick={(e) => onEditTag(e, tag)}>
                     <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Delete'>
+                  <IconButton onClick={(e) => onDeleteTag(e, tag)}>
+                    <DeleteIcon />
                   </IconButton>
                 </Tooltip>
               </TableCell>
@@ -167,7 +167,7 @@ export default function Tags() {
         </Button>
         <Pagination
           onChange={onPaginate}
-          count={Math.ceil(pageCount.current / 10)}
+          count={Math.ceil(pageCount.current / 13)}
           page={pageNumber}
           showFirstButton
           showLastButton
