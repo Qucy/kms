@@ -20,6 +20,7 @@ import {
 import InsertPhotoOutlinedIcon from '@mui/icons-material/InsertPhotoOutlined';
 import TagOutlinedIcon from '@mui/icons-material/TagOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
+import FolderSharedOutlinedIcon from '@mui/icons-material/FolderSharedOutlined';
 
 //import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
@@ -70,24 +71,39 @@ export default function Menu(props) {
       <Divider />
       <List component='nav'>
         <React.Fragment>
-          <ListItemButton  component={NavLink} to='/main/campaign'>
-            <ListItemIcon sx={{ padding: 0}}>
+
+          {/* campaign list */}
+          <ListItemButton component={NavLink} to='/main/campaign'>
+            <ListItemIcon sx={{ padding: 0 }}>
               <FolderOpenOutlinedIcon />
             </ListItemIcon>
             <ListItemText primary='Campaign Repository' />
           </ListItemButton>
+
+          {/* campaign manage */}
+          <ListItemButton component={NavLink} to='/main/campaignmanage'>
+            <ListItemIcon sx={{ padding: 0 }}>
+              <FolderSharedOutlinedIcon />
+            </ListItemIcon>
+            <ListItemText primary='Campaign Manage' />
+          </ListItemButton>
+
+          {/* image gallary */}
           <ListItemButton component={NavLink} to='/main/image'>
             <ListItemIcon>
               <InsertPhotoOutlinedIcon />
             </ListItemIcon>
             <ListItemText primary='Image Gallery' />
           </ListItemButton>
+
           {/* <ListItemButton component={NavLink} to='/main/document'>
             <ListItemIcon>
               <LibraryBooksIcon />
             </ListItemIcon>
             <ListItemText primary="Documents" />
            </ListItemButton> */}
+
+          {/* tag manage */}
           <ListItemButton component={NavLink} to='/main/tag'>
             <ListItemIcon>
               <TagOutlinedIcon />
