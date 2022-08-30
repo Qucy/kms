@@ -46,9 +46,6 @@ export default function Campaign() {
 
   const dropDownOption = React.useRef(0);
   const [tagNames, setTagNames] = React.useState('');
-  // const [messageType, setMessageType] = React.useState('');
-  // const [companyName, setCompanyName] = React.useState('');
-  // const [hsbcvsNonHSBC, setHsbcvsNonHSBC] = React.useState('');
 
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -139,86 +136,6 @@ export default function Campaign() {
       console.error(error);
     }
   };
-
-  // const handleCompanyNameChange = async (event) => {
-  //   try {
-  //     // Extract the value selcted by the user
-  //     var companyName = event.target.value;
-
-  //     // Display the selected value
-  //     setCompanyName(companyName);
-
-  //     // Special handling for default value
-  //     if (companyName === 'All Companies') {
-  //       companyName = '';
-  //     }
-
-  //     // Get data by calling the API endpoint
-  //     const response = await API_CAMPAIGN.getFilteredCampaigns(
-  //       tagNames,
-  //       messageType,
-  //       hsbcvsNonHSBC,
-  //       companyName
-  //     );
-  //     if (response.status === 200) {
-  //       dispatch(setCampaignList(response.data));
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
-  // const handleMessageTypeChange = async (event) => {
-  //   try {
-  //     // Extract the value selcted by the user
-  //     var messageType = event.target.value;
-
-  //     // Display the selected value
-  //     setMessageType(messageType);
-
-  //     // Special handling for default value
-  //     if (messageType === 'All Message Type') {
-  //       messageType = '';
-  //     }
-
-  //     // Get data by calling the API endpoint
-  //     const response = await API_CAMPAIGN.getFilteredCampaigns(
-  //       tagNames,
-  //       messageType,
-  //       hsbcvsNonHSBC,
-  //       companyName
-  //     );
-  //     if (response.status === 200) {
-  //       dispatch(setCampaignList(response.data));
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
-  // const handleHSBCvsNonHSBCChange = async (event) => {
-  //   setHsbcvsNonHSBC(event.target.value);
-
-  //   const _hsbcvsNonHSBC =
-  //     event.target.value === 'All Campaign' ? '' : event.target.value;
-  //   const [response, error] = await asyncFuncHandler(() =>
-  //     API_CAMPAIGN.getFilteredCampaigns(
-  //       tagNames,
-  //       messageType,
-  //       _hsbcvsNonHSBC,
-  //       companyName
-  //     )
-  //   );
-
-  //   if (response && response.statusText === 'OK') {
-  //     dispatch(setCampaignList(response.data));
-  //   }
-
-  //   if (error) {
-  //     dispatch(setStatus('ERROR'));
-  //     console.error(error);
-  //   }
-  // };
 
   // search function for image list
   const onSearch = async (event, value) => {
@@ -322,10 +239,9 @@ export default function Campaign() {
             label='Company'
             value={filter.companyName}
             sx={{ width: 200 }}
-            // onChange={handleCompanyNameChange}
             onChange={(evt) => handleFilterChange(evt, 'companyName')}
           >
-            {dropDownOption.companyName.map((d, i) => (
+            {dropDownOption.companyName?.map((d, i) => (
               <MenuItem key={i} value={d}>
                 {d}
               </MenuItem>
@@ -344,10 +260,9 @@ export default function Campaign() {
             label='Message Type'
             value={filter.messageType}
             sx={{ width: 200 }}
-            // onChange={handleMessageTypeChange}
             onChange={(evt) => handleFilterChange(evt, 'messageType')}
           >
-            {dropDownOption.messageType.map((d, i) => (
+            {dropDownOption.messageType?.map((d, i) => (
               <MenuItem key={i} value={d}>
                 {d}
               </MenuItem>
@@ -366,7 +281,6 @@ export default function Campaign() {
             label='HSBC vs Non HSBC'
             value={filter.hsbcvsNonHSBC}
             sx={{ width: 200 }}
-            //onChange={handleHSBCvsNonHSBCChange}
             onChange={(evt) => handleFilterChange(evt, 'classification')}
           >
             <MenuItem key={1} value={''}>
@@ -416,7 +330,7 @@ export default function Campaign() {
                   <CardContent>
                     <Stack direction='row' justifyContent='space-between'>
                       <div>
-                        <Typography
+                        {/* <Typography
                           variant='subtitle2'
                           component='div'
                           sx={{ color: '#2196f3' }}
@@ -426,7 +340,7 @@ export default function Campaign() {
                               ? Math.round(Math.random() * 1000) / 100
                               : d.response_rate
                           }%`}
-                        </Typography>
+                        </Typography> */}
                         <Typography variant='h6' component='div' noWrap>
                           {d.company}
                         </Typography>
