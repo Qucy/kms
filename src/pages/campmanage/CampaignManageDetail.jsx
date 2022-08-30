@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import {
   Drawer,
   Box,
@@ -18,22 +17,18 @@ import {
   Select,
   MenuItem,
   Popover,
-  Autocomplete,
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 
-import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
-import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { IconLabel } from '../../components/common';
+import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
+import { LoadingButton } from '@mui/lab';
 
 function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
-  const allTagList = useSelector(tagSliceSelector.allTagList);
-
   const [isEditing, setIsEditing] = React.useState(false);
   const [loadingEl, setLoadingEl] = React.useState(false);
 
@@ -66,7 +61,6 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
       location: editingDetail.location,
       message_type: editingDetail.messageType,
       response_rate: editingDetail.responseRate ? editingDetail.responseRate : null,
-      tag_names: tags.map((t) => t.tag_name).join(','),
     };
 
     const editCampaign = async () => {
@@ -119,7 +113,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
     }
   };
 
-  const onEditDetail = (e, t) => {
+  const onEdit = (e, t) => {
     setEditingDetail((_prevState) => {
       _prevState[t] = t === 'responseRate' ? Number(e.target.value) : e.target.value;
 
@@ -128,14 +122,6 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
       };
     });
   };
-
-  const onEditTag = (e, t) => {
-    //TODOs
-    //revise options for tags and only retrive the tag_name
-    setTags(t);
-  };
-
-  const onEditImage = (e) => {};
 
   React.useEffect(() => {
     if (campaignDetail.campaignId && !editingDetail) {
@@ -179,7 +165,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
       <Box sx={{ width: 750, pt: 12, px: 3 }}>
         {isEditing ? (
-          <Stack spacing={1.25}>
+          <Stack spacing={1}>
             <TextField
               required
               margin='dense'
@@ -189,7 +175,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
               fullWidth
               variant='standard'
               value={editingDetail.companyName}
-              onChange={(evt) => onEditDetail(evt, 'companyName')}
+              onChange={(evt) => onEdit(evt, 'companyName')}
             />
             <FormControl variant='standard' fullWidth required>
               <InputLabel id='new-campaign-location'>Location</InputLabel>
@@ -198,7 +184,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 id='new-campaign-location-id'
                 value={editingDetail.location}
                 label='Location'
-                onChange={(evt) => onEditDetail(evt, 'location')}
+                onChange={(evt) => onEdit(evt, 'location')}
               >
                 <MenuItem value={'HK'}>HK</MenuItem>
                 <MenuItem value={'UK'}>UK</MenuItem>
@@ -211,7 +197,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 id='new-campaign-classification-id'
                 value={editingDetail.classification}
                 label='Classification'
-                onChange={(evt) => onEditDetail(evt, 'classification')}
+                onChange={(evt) => onEdit(evt, 'classification')}
               >
                 <MenuItem value={'HSBC'}>HSBC</MenuItem>
                 <MenuItem value={'Non-HSBC'}>Non-HSBC</MenuItem>
@@ -224,7 +210,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 id='new-campaign-messageType-id'
                 value={editingDetail.messageType}
                 label='Message Type'
-                onChange={(evt) => onEditDetail(evt, 'messageType')}
+                onChange={(evt) => onEdit(evt, 'messageType')}
               >
                 <MenuItem value={'MGM Banner'}>MGM Banner</MenuItem>
                 <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
@@ -235,27 +221,14 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 <MenuItem value={'Mobile In-app'}>Mobile In-app</MenuItem>
               </Select>
             </FormControl>
-            <Autocomplete
-              onChange={onEditTag}
-              multiple
-              id='tags-standard'
-              options={allTagList
-                .slice()
-                .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
-              groupBy={(option) => option.tag_category}
-              value={tags}
-              getOptionLabel={(option) => option.tag_name}
-              isOptionEqualToValue={(option, value) =>
-                option.tag_name.toLowerCase() === value.tag_name.toLowerCase()
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant='standard'
-                  label='Update hash tag'
-                  placeholder='Hash tag'
-                />
-              )}
+            <TextField
+              margin='dense'
+              id='name'
+              label='Response Rate'
+              type='number'
+              fullWidth
+              variant='standard'
+              onChange={(evt) => onEdit(evt, 'responseRate')}
             />
             <Stack direction='row' sx={{ py: 1 }} spacing={1}>
               <LoadingButton
