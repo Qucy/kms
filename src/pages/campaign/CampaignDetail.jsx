@@ -175,8 +175,6 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
     fetchTags(campaignDetail.campaignId);
   }, [campaignDetail.campaignId]);
 
-  React.useEffect(() => console.log(tags), [tags]);
-
   return (
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
       <Box sx={{ width: 750, pt: 12, px: 3 }}>
@@ -245,8 +243,11 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 .slice()
                 .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
               groupBy={(option) => option.tag_category}
+              value={tags}
               getOptionLabel={(option) => option.tag_name}
-              defaultValue={tags}
+              isOptionEqualToValue={(option, value) =>
+                option.tag_name.toLowerCase() === value.tag_name.toLowerCase()
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}

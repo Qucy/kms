@@ -239,7 +239,6 @@ export default function Campaign() {
             label='Company'
             value={filter.companyName}
             sx={{ width: 200 }}
-            // onChange={handleCompanyNameChange}
             onChange={(evt) => handleFilterChange(evt, 'companyName')}
           >
             {dropDownOption.companyName?.map((d, i) => (
@@ -261,7 +260,6 @@ export default function Campaign() {
             label='Message Type'
             value={filter.messageType}
             sx={{ width: 200 }}
-            // onChange={handleMessageTypeChange}
             onChange={(evt) => handleFilterChange(evt, 'messageType')}
           >
             {dropDownOption.messageType?.map((d, i) => (
@@ -283,7 +281,6 @@ export default function Campaign() {
             label='HSBC vs Non HSBC'
             value={filter.hsbcvsNonHSBC}
             sx={{ width: 200 }}
-            //onChange={handleHSBCvsNonHSBCChange}
             onChange={(evt) => handleFilterChange(evt, 'classification')}
           >
             <MenuItem key={1} value={''}>
