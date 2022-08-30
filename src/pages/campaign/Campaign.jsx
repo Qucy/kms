@@ -46,9 +46,6 @@ export default function Campaign() {
 
   const dropDownOption = React.useRef(0);
   const [tagNames, setTagNames] = React.useState('');
-  // const [messageType, setMessageType] = React.useState('');
-  // const [companyName, setCompanyName] = React.useState('');
-  // const [hsbcvsNonHSBC, setHsbcvsNonHSBC] = React.useState('');
 
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -139,86 +136,6 @@ export default function Campaign() {
       console.error(error);
     }
   };
-
-  // const handleCompanyNameChange = async (event) => {
-  //   try {
-  //     // Extract the value selcted by the user
-  //     var companyName = event.target.value;
-
-  //     // Display the selected value
-  //     setCompanyName(companyName);
-
-  //     // Special handling for default value
-  //     if (companyName === 'All Companies') {
-  //       companyName = '';
-  //     }
-
-  //     // Get data by calling the API endpoint
-  //     const response = await API_CAMPAIGN.getFilteredCampaigns(
-  //       tagNames,
-  //       messageType,
-  //       hsbcvsNonHSBC,
-  //       companyName
-  //     );
-  //     if (response.status === 200) {
-  //       dispatch(setCampaignList(response.data));
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
-  // const handleMessageTypeChange = async (event) => {
-  //   try {
-  //     // Extract the value selcted by the user
-  //     var messageType = event.target.value;
-
-  //     // Display the selected value
-  //     setMessageType(messageType);
-
-  //     // Special handling for default value
-  //     if (messageType === 'All Message Type') {
-  //       messageType = '';
-  //     }
-
-  //     // Get data by calling the API endpoint
-  //     const response = await API_CAMPAIGN.getFilteredCampaigns(
-  //       tagNames,
-  //       messageType,
-  //       hsbcvsNonHSBC,
-  //       companyName
-  //     );
-  //     if (response.status === 200) {
-  //       dispatch(setCampaignList(response.data));
-  //     }
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
-  // const handleHSBCvsNonHSBCChange = async (event) => {
-  //   setHsbcvsNonHSBC(event.target.value);
-
-  //   const _hsbcvsNonHSBC =
-  //     event.target.value === 'All Campaign' ? '' : event.target.value;
-  //   const [response, error] = await asyncFuncHandler(() =>
-  //     API_CAMPAIGN.getFilteredCampaigns(
-  //       tagNames,
-  //       messageType,
-  //       _hsbcvsNonHSBC,
-  //       companyName
-  //     )
-  //   );
-
-  //   if (response && response.statusText === 'OK') {
-  //     dispatch(setCampaignList(response.data));
-  //   }
-
-  //   if (error) {
-  //     dispatch(setStatus('ERROR'));
-  //     console.error(error);
-  //   }
-  // };
 
   // search function for image list
   const onSearch = async (event, value) => {
