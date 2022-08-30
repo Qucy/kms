@@ -98,7 +98,9 @@ export default function Tags() {
 
   return (
     <React.Fragment>
-      <Title>Tags</Title>
+      <Typography variant='h5' sx={{ fontColor: 'blue' }}>
+        Tags
+      </Typography>
       <Table size='small' sx={{ maxHeight: 300 }}>
         <TableHead>
           <TableRow>
