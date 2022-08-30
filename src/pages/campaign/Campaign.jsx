@@ -325,7 +325,7 @@ export default function Campaign() {
             // onChange={handleCompanyNameChange}
             onChange={(evt) => handleFilterChange(evt, 'companyName')}
           >
-            {dropDownOption.companyName.map((d, i) => (
+            {dropDownOption.companyName?.map((d, i) => (
               <MenuItem key={i} value={d}>
                 {d}
               </MenuItem>
@@ -347,7 +347,7 @@ export default function Campaign() {
             // onChange={handleMessageTypeChange}
             onChange={(evt) => handleFilterChange(evt, 'messageType')}
           >
-            {dropDownOption.messageType.map((d, i) => (
+            {dropDownOption.messageType?.map((d, i) => (
               <MenuItem key={i} value={d}>
                 {d}
               </MenuItem>
@@ -416,7 +416,7 @@ export default function Campaign() {
                   <CardContent>
                     <Stack direction='row' justifyContent='space-between'>
                       <div>
-                        <Typography
+                        {/* <Typography
                           variant='subtitle2'
                           component='div'
                           sx={{ color: '#2196f3' }}
@@ -426,7 +426,7 @@ export default function Campaign() {
                               ? Math.round(Math.random() * 1000) / 100
                               : d.response_rate
                           }%`}
-                        </Typography>
+                        </Typography> */}
                         <Typography variant='h6' component='div' noWrap>
                           {d.company}
                         </Typography>
