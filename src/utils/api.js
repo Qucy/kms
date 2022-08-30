@@ -67,6 +67,13 @@ export const API_IMAGE = {
 };
 
 export const API_CAMPAIGN = {
+  getPaginatedCampaigns: async (page = '') => {
+    const config = {
+      method: 'get',
+      url: page ? `/campaign/pagination/?page=${page}` : '/campaign/pagination/',
+    };
+    return fetchRequest(config);
+  },
   getAllCampaigns: async () => {
     const config = {
       method: 'get',
@@ -137,6 +144,14 @@ export const API_CAMPAIGN = {
     };
     return fetchRequest(config);
   },
+  updateCampaignStatus: async (payload) => {
+    const config = {
+      method: 'patch',
+      url: `/campaign/updateStatus/`,
+      data: JSON.stringify(payload),
+    };
+    return fetchRequest(config);
+  }
 };
 
 // tag module api
