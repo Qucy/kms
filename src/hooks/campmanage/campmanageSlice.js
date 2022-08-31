@@ -20,6 +20,7 @@ const initalCampaignManageState = {
     companyName: '',
   },
   status: 'LOADING', // LOADING, SUCCESS, ERROR, IDLE
+  buttonStatus: '',
 };
 
 export const campaignManageSlice = createSlice({
@@ -51,6 +52,9 @@ export const campaignManageSlice = createSlice({
     setStatus: (state, action) => {
       state.status = action.payload;
     },
+    setButtonStatus: (state, action) => {
+      state.buttonStatus = action.payload;
+    },
   },
 });
 
@@ -63,6 +67,7 @@ export const {
   setClassificationFilter,
   setCompanyFilter,
   setStatus,
+  setButtonStatus,
 } = campaignManageSlice.actions;
 
 export const campaignManageSliceSelector = {
@@ -70,6 +75,7 @@ export const campaignManageSliceSelector = {
   campaignDetail: (state) => state.campmanage.campaignDetail,
   filter: (state) => state.campmanage.filter,
   status: (state) => state.campmanage.status,
+  buttonStatus: (state) => state.campmanage.buttonStatus,
 };
 
 export default campaignManageSlice.reducer;
