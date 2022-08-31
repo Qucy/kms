@@ -212,7 +212,7 @@ export default function CampaignManage() {
           aria-labelledby='alert-dialog-title'
           aria-describedby='alert-dialog-description'
         >
-          <DialogTitle id='alert-dialog-title'>{'Confirmation Dialog'}</DialogTitle>
+          <DialogTitle id='alert-dialog-title'>{confirmationAction == 'APPROVE' ? 'Approve' : 'Reject'}{' confirmation'}</DialogTitle>
           <DialogContent>
             <DialogContentText id='alert-dialog-description'>
               Are you sure want to {confirmationAction == 'APPROVE' ? 'approve' : 'reject'} this Campaign. Click "Confirm" to proceed.
