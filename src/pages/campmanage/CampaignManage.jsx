@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { LoadingButton } from '@mui/lab';
 import {
   Typography,
   Stack,
@@ -13,11 +14,17 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   setCampaignList,
   setCampaignDetail,
+  setButtonStatus,
   setStatus,
   campaignManageSliceSelector,
 } from '../../hooks/campmanage/campmanageSlice';
@@ -30,11 +37,17 @@ import Title from '../main/title';
 export default function CampaignManage() {
 
   const campaignList = useSelector(campaignManageSliceSelector.campaignList);
+  const campaignDetail = useSelector(campaignManageSliceSelector.campaignDetail);
   const status = useSelector(campaignManageSliceSelector.status);
+  const buttonStatus = useSelector(campaignManageSliceSelector.buttonStatus)
   const dispatch = useDispatch();
-
+  // pagination related status and ref
   const [pageNumber, setPageNumber] = React.useState(1);
   const pageCount = React.useRef(0);
+  // confirmation related status
+  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = React.useState(false);
+  const [confirmationAction, setConfirmationAction] = React.useState('');
+  const [confirmationCampaignID, setConfirmationCampaignID] = React.useState('');
 
   // function to fetch paginated campaigns
   const fetchPaginatedCampaigns = async (pageNumber) => {
@@ -56,37 +69,38 @@ export default function CampaignManage() {
     }
   };
 
-  // function to approve campaign
-  const onApprove = async (e, camp) => {
-    // create payload
-    const payload = {
-      id: camp.id,
-      status: 'APPROVED',
-    };
-    // call api
-    try {
-      const response = await API_CAMPAIGN.updateCampaignStatus(payload)
-      if (response.status === 200) {
-        // refresh data
-        fetchPaginatedCampaigns();
-      }
-    } catch (e) {
-      console.error("Error when call update campaign status API")
-      console.error(e);
-    }
+  // function to close confirmation dialog
+  const onConfirmationDialogClose = () => {
+    setIsConfirmationDialogOpen(false)
+    setConfirmationCampaignID('')
+    setConfirmationAction('')
   }
 
-  // function to reject campaign
-  const onReject = async (e, camp) => {
+  // function to open confirmation dialog
+  const onConfirmationDialogOpen = (e, camp, action) => {
+    dispatch(setButtonStatus(''));
+    setIsConfirmationDialogOpen(true)
+    setConfirmationCampaignID(camp.id)
+    setConfirmationAction(action)
+  }
+
+  // function to approve or reject campaign
+  const onApproveOrReject = async (e) => {
+    // update buttonStatus to loading
+    dispatch(setButtonStatus('LOADING'));
     // create payload
     const payload = {
-      id: camp.id,
-      status: 'NEW',
+      id: confirmationCampaignID,
+      status: confirmationAction == 'APPROVE' ? 'APPROVED' : 'NEW',
     };
     // call api
     try {
       const response = await API_CAMPAIGN.updateCampaignStatus(payload)
       if (response.status === 200) {
+        // update button status
+        dispatch(setButtonStatus('SUCCESS'));
+        // close dialog
+        setTimeout(onConfirmationDialogClose, 1000);
         // refresh data
         fetchPaginatedCampaigns();
       }
@@ -175,12 +189,12 @@ export default function CampaignManage() {
                 {camp.status == 'PENDING' ?
                   <div>
                     <Tooltip title='APPROVE'>
-                      <IconButton onClick={(e) => onApprove(e, camp)}>
+                      <IconButton onClick={(e) => onConfirmationDialogOpen(e, camp, 'APPROVE')}>
                         <PlaylistAddCheckOutlinedIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title='REJECT'>
-                      <IconButton onClick={(e) => onReject(e, camp)}>
+                      <IconButton onClick={(e) => onConfirmationDialogOpen(e, camp, 'REJECT')}>
                         <PlaylistRemoveOutlinedIcon />
                       </IconButton>
                     </Tooltip>
@@ -192,6 +206,28 @@ export default function CampaignManage() {
             </TableRow>
           ))}
         </TableBody>
+        <Dialog
+          open={isConfirmationDialogOpen}
+          onClose={onConfirmationDialogClose}
+          aria-labelledby='alert-dialog-title'
+          aria-describedby='alert-dialog-description'
+        >
+          <DialogTitle id='alert-dialog-title'>{'Confirmation Dialog'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id='alert-dialog-description'>
+              Are you sure want to {confirmationAction == 'APPROVE' ? 'approve' : 'reject'} this Campaign. Click "Confirm" to proceed.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onConfirmationDialogClose}>Close</Button>
+            <LoadingButton
+              loading={buttonStatus === 'LOADING'}
+              onClick={(e) => onApproveOrReject(e)}
+            >
+              {buttonStatus === 'SUCCESS' ? 'Success!' : 'Confirm'}
+            </LoadingButton>
+          </DialogActions>
+        </Dialog>
       </Table>
       <div style={{ padding: '0.5rem 0rem' }} />
       <Stack direction='row' spacing={2}>
