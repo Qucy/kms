@@ -81,12 +81,12 @@ export default function Menu(props) {
           </ListItemButton>
 
           {/* campaign manage */}
-          <ListItemButton component={NavLink} to='/main/campaignmanage'>
+          {/* <ListItemButton component={NavLink} to='/main/campaignmanage'>
             <ListItemIcon sx={{ padding: 0 }}>
               <FolderSharedOutlinedIcon />
             </ListItemIcon>
             <ListItemText primary='Campaign Manage' />
-          </ListItemButton>
+          </ListItemButton> */}
 
           {/* image gallary */}
           <ListItemButton component={NavLink} to='/main/image'>
