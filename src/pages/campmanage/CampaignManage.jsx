@@ -1,4 +1,5 @@
 import React from 'react';
+import Moment from 'moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -30,9 +31,11 @@ import {
 } from '../../hooks/campmanage/campmanageSlice';
 import PlaylistAddCheckOutlinedIcon from '@mui/icons-material/PlaylistAddCheckOutlined';
 import PlaylistRemoveOutlinedIcon from '@mui/icons-material/PlaylistRemoveOutlined';
+import ViewHeadlineOutlinedIcon from '@mui/icons-material/ViewHeadlineOutlined';
 import { API_CAMPAIGN } from '../../utils/api';
 import { asyncFuncHandlerWithParameter } from '../../utils/handler';
 import Title from '../main/title';
+import CampaignManageDetail from './CampaignManageDetail'
 
 export default function CampaignManage() {
 
@@ -82,6 +85,11 @@ export default function CampaignManage() {
     setIsConfirmationDialogOpen(true)
     setConfirmationCampaignID(camp.id)
     setConfirmationAction(action)
+  }
+
+  // function to display campaign detail page
+  const onViewDialogOpen = (e, camp) => {
+    console.log(camp)
   }
 
   // function to approve or reject campaign
@@ -183,11 +191,16 @@ export default function CampaignManage() {
               <TableCell>{camp.hsbc_vs_non_hsbc}</TableCell>
               <TableCell><img src={`data:image/jpeg;base64,${camp.img}`} width={100} height={100}></img></TableCell>
               <TableCell>{camp.create_by}</TableCell>
-              <TableCell>{camp.creation_datetime}</TableCell>
+              <TableCell>{Moment(camp.creation_datetime).format("yyyy-MM-DD hh:mm:ss")}</TableCell>
               <TableCell>{camp.status}</TableCell>
               <TableCell>
+                <Tooltip title='VIEW'>
+                  <IconButton onClick={(e) => onViewDialogOpen(e, camp)}>
+                    <ViewHeadlineOutlinedIcon />
+                  </IconButton>
+                </Tooltip>
                 {camp.status == 'PENDING' ?
-                  <div>
+                  <>
                     <Tooltip title='APPROVE'>
                       <IconButton onClick={(e) => onConfirmationDialogOpen(e, camp, 'APPROVE')}>
                         <PlaylistAddCheckOutlinedIcon />
@@ -198,9 +211,9 @@ export default function CampaignManage() {
                         <PlaylistRemoveOutlinedIcon />
                       </IconButton>
                     </Tooltip>
-                  </div>
+                  </>
                   :
-                  <div>----</div>
+                  <></>
                 }
               </TableCell>
             </TableRow>
@@ -239,6 +252,13 @@ export default function CampaignManage() {
           showLastButton
         />
       </Stack>
+      {/*
+      <CampaignDetail
+        campaignDetail={campaignDetail}
+        open={isDetailDrawerOpen}
+        onClose={onDrawerClose}
+        fetchCampaigns={fetchCampaigns}
+      /> */ }
     </React.Fragment>
   );
 }
