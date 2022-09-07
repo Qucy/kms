@@ -163,16 +163,12 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
   const onDeleteImage = (e, i) => {
     setEditingDetail((_prevState) => {
       const { images } = _prevState;
-
-      const _images = [...images];
+      let _prev = { ..._prevState };
+      let _images = [...images];
 
       _images.splice(i, 1);
-
-      console.log(_images);
-      return {
-        images: _images,
-        ..._prevState,
-      };
+      _prev.images = _images;
+      return _prev;
     });
   };
 
