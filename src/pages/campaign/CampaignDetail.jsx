@@ -198,7 +198,9 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
     fetchData(campaignId);
   }, [campaignId]);
 
-  React.useEffect(() => console.log(campaignId), [campaignId]);
+  React.useEffect(() => setEditingDetail(campaignDetail), [campaignDetail]);
+
+  React.useEffect(() => console.log(editingDetail), [editingDetail]);
 
   if (status === 'LOADING')
     return (
@@ -401,15 +403,19 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
             </Stack>
 
             <ImageList sx={{ maxHeight: 900 }} cols={1}>
-              {campaignDetail.images?.map((image, i) => (
-                <ImageListItem key={i}>
-                  <img
-                    src={`data:image/jpeg;base64,${image.img}`}
-                    alt={image.image_name}
-                    loading='lazy'
-                  />
-                </ImageListItem>
-              ))}
+              {campaignDetail.images ? (
+                campaignDetail.images.map((image, i) => (
+                  <ImageListItem key={i}>
+                    <img
+                      src={`data:image/jpeg;base64,${image.img}`}
+                      alt={image.image_name}
+                      loading='lazy'
+                    />
+                  </ImageListItem>
+                ))
+              ) : (
+                <div></div>
+              )}
             </ImageList>
 
             <Stack direction='row'>
