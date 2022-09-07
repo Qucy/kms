@@ -141,18 +141,38 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
   };
 
   const onEditTag = (e, t) => {
-    //TODOs
-    //revise options for tags and only retrive the tag_name
-    setTags(t);
+    setEditingDetail((_prevState) => {
+      _prevState.tags = t;
+
+      return {
+        ..._prevState,
+      };
+    });
   };
 
-  const onEditImage = (e) => {};
+  const onEditImage = (e, i) => {
+    setEditingDetail((_prevState) => {
+      _prevState.images.splice(i, 1);
+
+      return {
+        ..._prevState,
+      };
+    });
+  };
 
   const onDeleteImage = (e, i) => {
-    setImages((_prevState) => {
-      let _images = [..._prevState];
+    setEditingDetail((_prevState) => {
+      const { images } = _prevState;
+
+      const _images = [...images];
+
       _images.splice(i, 1);
-      return _images;
+
+      console.log(_images);
+      return {
+        images: _images,
+        ..._prevState,
+      };
     });
   };
 
@@ -198,9 +218,12 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
     fetchData(campaignId);
   }, [campaignId]);
 
-  React.useEffect(() => setEditingDetail(campaignDetail), [campaignDetail]);
+  React.useEffect(
+    () => setEditingDetail(Object.assign({}, campaignDetail)),
+    [campaignDetail]
+  );
 
-  React.useEffect(() => console.log(editingDetail), [editingDetail]);
+  // React.useEffect(() => console.log(editingDetail), [editingDetail]);
 
   if (status === 'LOADING')
     return (
@@ -228,8 +251,8 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                 type='text'
                 fullWidth
                 variant='standard'
-                value={editingDetail.companyName}
-                onChange={(evt) => onEditDetail(evt, 'companyName')}
+                value={editingDetail.company}
+                onChange={(evt) => onEditDetail(evt, 'company')}
               />
               <FormControl variant='standard' fullWidth required>
                 <InputLabel id='new-campaign-location'>Location</InputLabel>
@@ -249,9 +272,9 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                 <Select
                   labelId='new-campaign-classification-label-id'
                   id='new-campaign-classification-id'
-                  value={editingDetail.classification}
+                  value={editingDetail.hsbc_vs_non_hsbc}
                   label='Classification'
-                  onChange={(evt) => onEditDetail(evt, 'classification')}
+                  onChange={(evt) => onEditDetail(evt, 'hsbc_vs_non_hsbc')}
                 >
                   <MenuItem value={'HSBC'}>HSBC</MenuItem>
                   <MenuItem value={'Non-HSBC'}>Non-HSBC</MenuItem>
@@ -262,9 +285,9 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                 <Select
                   labelId='new-campaign-messageType-label-id'
                   id='new-campaign-messageType-id'
-                  value={editingDetail.messageType}
+                  value={editingDetail.message_type}
                   label='Message Type'
-                  onChange={(evt) => onEditDetail(evt, 'messageType')}
+                  onChange={(evt) => onEditDetail(evt, 'message_type')}
                 >
                   <MenuItem value={'MGM Banner'}>MGM Banner</MenuItem>
                   <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
@@ -288,7 +311,7 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                   .slice()
                   .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
                 groupBy={(option) => option.tag_category}
-                value={campaignDetail.tags}
+                value={editingDetail.tags}
                 getOptionLabel={(option) => option.tag_name}
                 isOptionEqualToValue={(option, value) =>
                   option.tag_name.toLowerCase() === value.tag_name.toLowerCase()
@@ -306,7 +329,7 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                 Image
               </Typography>
               <ImageList sx={{ width: '100%', height: 250 }} cols={3}>
-                {images.map((item, i) => (
+                {editingDetail.images?.map((item, i) => (
                   <ImageListItem key={i}>
                     <img
                       src={`data:image/jpeg;base64,${item.img}`}
