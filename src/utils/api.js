@@ -81,6 +81,13 @@ export const API_CAMPAIGN = {
     };
     return fetchRequest(config);
   },
+  getCampaignDetail: async (id) => {
+    const config = {
+      method: 'get',
+      url: `/campaign/${id}/`,
+    };
+    return fetchRequest(config);
+  },
   getFilteredCampaignsbyTagNames: async (tag_names = '') => {
     const config = {
       method: 'get',
@@ -151,7 +158,7 @@ export const API_CAMPAIGN = {
       data: JSON.stringify(payload),
     };
     return fetchRequest(config);
-  }
+  },
 };
 
 // tag module api

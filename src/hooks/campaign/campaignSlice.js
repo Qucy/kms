@@ -9,8 +9,8 @@ const initalCampaignState = {
     location: '',
     messageType: '',
     responseRate: null,
-    tag: [],
-    image: [],
+    tags: [],
+    images: [],
     imagePreview: [],
   },
   filter: {
@@ -33,11 +33,11 @@ export const campaignSlice = createSlice({
     setCampaignDetail: (state, action) => {
       state.campaignDetail = action.payload;
     },
-    setCampaignDetailImage: (state, action) => {
-      state.campaignDetail.image = action.payload;
+    setCampaignDetailImages: (state, action) => {
+      state.campaignDetail.images = action.payload;
     },
-    setCampaignDetailTag: (state, action) => {
-      state.campaignDetail.tag = action.payload;
+    setCampaignDetailTags: (state, action) => {
+      state.campaignDetail.tags = action.payload;
     },
     setMessageFilter: (state, action) => {
       state.filter.messageType = action.payload;
@@ -57,8 +57,8 @@ export const campaignSlice = createSlice({
 export const {
   setCampaignList,
   setCampaignDetail,
-  setCampaignDetailImage,
-  setCampaignDetailTag,
+  setCampaignDetailImages,
+  setCampaignDetailTags,
   setMessageFilter,
   setClassificationFilter,
   setCompanyFilter,

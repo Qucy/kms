@@ -44,6 +44,8 @@ export default function Campaign() {
   const status = useSelector(campaignSliceSelector.status);
   const dispatch = useDispatch();
 
+  const [campaignId, setCampaignId] = React.useState(null);
+
   const dropDownOption = React.useRef(0);
   const [tagNames, setTagNames] = React.useState('');
 
@@ -51,8 +53,6 @@ export default function Campaign() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const toggleDrawerOpen = () => setIsDetailDrawerOpen((_prevState) => !_prevState);
   const toggleDialogOpen = () => setIsDialogOpen((_prevState) => !_prevState);
-
-  const [imageSource, setImageSource] = React.useState('DEFAULT');
 
   const fetchCampaigns = async () => {
     dispatch(setStatus('LOADING'));
@@ -147,8 +147,8 @@ export default function Campaign() {
     }
   };
 
-  const onSelect = (d) => {
-    dispatch(setCampaignDetail(d));
+  const onSelect = (id) => {
+    setCampaignId(id);
     toggleDrawerOpen();
   };
 
@@ -310,17 +310,10 @@ export default function Campaign() {
                 }}
               >
                 <CardActionArea
-                  onClick={() =>
-                    onSelect({
-                      campaignId: d.id,
-                      companyName: d.company,
-                      classification: d.hsbc_vs_non_hsbc,
-                      location: d.location,
-                      messageType: d.message_type,
-                      responseRate: d.response_rate,
-                      tag: d.tag,
-                    })
-                  }
+                  onClick={(evt) => {
+                    evt.stopPropagation();
+                    onSelect(d.id);
+                  }}
                 >
                   <CardMedia
                     component='img'
@@ -357,7 +350,7 @@ export default function Campaign() {
         </Grid>
       </Stack>
       <CampaignDetail
-        campaignDetail={campaignDetail}
+        campaignId={campaignId}
         open={isDetailDrawerOpen}
         onClose={onDrawerClose}
         fetchCampaigns={fetchCampaigns}

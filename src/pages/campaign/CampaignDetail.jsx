@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Drawer,
   Box,
@@ -8,7 +8,6 @@ import {
   IconButton,
   Grid,
   Chip,
-  Skeleton,
   Button,
   ImageList,
   ImageListItem,
@@ -19,6 +18,8 @@ import {
   MenuItem,
   Popover,
   Autocomplete,
+  ImageListItemBar,
+  CircularProgress,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import CloseIcon from '@mui/icons-material/Close';
@@ -26,13 +27,24 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
 import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { IconLabel } from '../../components/common';
+import { asyncFuncHandlerWithParameter } from '../../utils/handler';
+import {
+  campaignSliceSelector,
+  setCampaignDetail,
+  setCampaignDetailImages,
+  setCampaignDetailTags,
+} from '../../hooks/campaign/campaignSlice';
 
-function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
+function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
   const allTagList = useSelector(tagSliceSelector.allTagList);
+  const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
+
+  const dispatch = useDispatch();
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [loadingEl, setLoadingEl] = React.useState(false);
@@ -40,10 +52,9 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
   const [images, setImages] = React.useState([]);
   const [tags, setTags] = React.useState([]);
 
-  const [isTagLoading, setIsTagLoading] = React.useState(false);
-  const [isImageLoading, setIsImageLoading] = React.useState(false);
+  const [status, setStatus] = React.useState('IDLE'); // LOADING, SUCCESS, ERROR, IDLE
 
-  const [editingDetail, setEditingDetail] = React.useState(null);
+  const [editingDetail, setEditingDetail] = React.useState(campaignDetail);
 
   const [popoverEl, setPopoverEl] = React.useState(null);
 
@@ -137,126 +148,187 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
 
   const onEditImage = (e) => {};
 
-  React.useEffect(() => {
-    if (campaignDetail.campaignId && !editingDetail) {
-      setEditingDetail(Object.assign({}, campaignDetail));
-    }
-  }, [campaignDetail, editingDetail]);
+  const onDeleteImage = (e, i) => {
+    setImages((_prevState) => {
+      let _images = [..._prevState];
+      _images.splice(i, 1);
+      return _images;
+    });
+  };
 
   React.useEffect(() => {
-    const fetchTags = async (id) => {
-      try {
-        const response = await API_CAMPAIGNTAGLINK.getTagsByCampaignId(id);
-        if (response.status === 200) {
-          setTags(response.data);
-          setIsTagLoading(false);
-        }
-      } catch (e) {
-        console.error(e);
+    setStatus('LOADING');
+
+    const fetchData = async (id) => {
+      if (!id) return 'IDLE';
+
+      const [detailRes, detailErr] = await asyncFuncHandlerWithParameter(
+        API_CAMPAIGN.getCampaignDetail,
+        id
+      );
+
+      const [tagsRes, tagsErr] = await asyncFuncHandlerWithParameter(
+        API_CAMPAIGNTAGLINK.getTagsByCampaignId,
+        id
+      );
+
+      const [imagesRes, imagesErr] = await asyncFuncHandlerWithParameter(
+        API_IMAGE.getImageByCampaignId,
+        id
+      );
+
+      if (detailRes && detailRes.statusText === 'OK') {
+        dispatch(setCampaignDetail(detailRes.data));
       }
+      if (tagsRes && tagsRes.statusText === 'OK') {
+        dispatch(setCampaignDetailTags(tagsRes.data));
+      }
+      if (imagesRes && imagesRes.statusText === 'OK') {
+        dispatch(setCampaignDetailImages(imagesRes.data.results));
+      }
+
+      if (detailErr || tagsErr || imagesErr) {
+        setStatus('ERROR');
+        console.error('ERROR');
+      }
+
+      setStatus('SUCCESS');
     };
 
-    const fetchImages = async (id) => {
-      try {
-        const response = await API_IMAGE.getImageByCampaignId(id);
-        if (response.status === 200) {
-          setImages(response.data.results);
-          setIsImageLoading(false);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
+    fetchData(campaignId);
+  }, [campaignId]);
 
-    setIsTagLoading(true);
-    setIsTagLoading(false);
+  React.useEffect(() => console.log(campaignId), [campaignId]);
 
-    fetchImages(campaignDetail.campaignId);
-    fetchTags(campaignDetail.campaignId);
-  }, [campaignDetail.campaignId]);
+  if (status === 'LOADING')
+    return (
+      <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
+        <Box sx={{ width: 750, pt: 12, px: 3 }}>
+          <Stack sx={{ height: '90vh' }} alignItems='center' justifyContent='center'>
+            <CircularProgress />
+          </Stack>
+        </Box>
+      </Drawer>
+    );
 
   return (
     <Drawer anchor='right' open={open} sx={{ zIndex: 2 }}>
       <Box sx={{ width: 750, pt: 12, px: 3 }}>
         {isEditing ? (
-          <Stack spacing={1.25}>
-            <TextField
-              required
-              margin='dense'
-              id='name'
-              label='Company Name'
-              type='text'
-              fullWidth
-              variant='standard'
-              value={editingDetail.companyName}
-              onChange={(evt) => onEditDetail(evt, 'companyName')}
-            />
-            <FormControl variant='standard' fullWidth required>
-              <InputLabel id='new-campaign-location'>Location</InputLabel>
-              <Select
-                labelId='new-campaign-location-label-id'
-                id='new-campaign-location-id'
-                value={editingDetail.location}
-                label='Location'
-                onChange={(evt) => onEditDetail(evt, 'location')}
-              >
-                <MenuItem value={'HK'}>HK</MenuItem>
-                <MenuItem value={'UK'}>UK</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl variant='standard' fullWidth required>
-              <InputLabel id='new-campaign-classification'>Classification</InputLabel>
-              <Select
-                labelId='new-campaign-classification-label-id'
-                id='new-campaign-classification-id'
-                value={editingDetail.classification}
-                label='Classification'
-                onChange={(evt) => onEditDetail(evt, 'classification')}
-              >
-                <MenuItem value={'HSBC'}>HSBC</MenuItem>
-                <MenuItem value={'Non-HSBC'}>Non-HSBC</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl variant='standard' fullWidth required>
-              <InputLabel id='new-campaign-messageType'>Message Type</InputLabel>
-              <Select
-                labelId='new-campaign-messageType-label-id'
-                id='new-campaign-messageType-id'
-                value={editingDetail.messageType}
-                label='Message Type'
-                onChange={(evt) => onEditDetail(evt, 'messageType')}
-              >
-                <MenuItem value={'MGM Banner'}>MGM Banner</MenuItem>
-                <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
-                <MenuItem value={'PWS Banner'}>PWS Banner</MenuItem>
-                <MenuItem value={'FB Banner'}>FB Banner</MenuItem>
-                <MenuItem value={'Campaign Landing Page'}>Campaign Landing Page</MenuItem>
-                <MenuItem value={'PWS'}>PWS</MenuItem>
-                <MenuItem value={'Mobile In-app'}>Mobile In-app</MenuItem>
-              </Select>
-            </FormControl>
-            <Autocomplete
-              onChange={onEditTag}
-              multiple
-              id='tags-standard'
-              options={allTagList
-                .slice()
-                .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
-              groupBy={(option) => option.tag_category}
-              value={tags}
-              getOptionLabel={(option) => option.tag_name}
-              isOptionEqualToValue={(option, value) =>
-                option.tag_name.toLowerCase() === value.tag_name.toLowerCase()
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant='standard'
-                  label='Update hash tag'
-                  placeholder='Hash tag'
-                />
-              )}
-            />
+          <Stack sx={{ height: '90vh' }} justifyContent='space-between'>
+            <Stack spacing={1.25}>
+              <Typography variant='h4'>Basic Information</Typography>
+              <TextField
+                required
+                margin='dense'
+                id='name'
+                label='Company Name'
+                type='text'
+                fullWidth
+                variant='standard'
+                value={editingDetail.companyName}
+                onChange={(evt) => onEditDetail(evt, 'companyName')}
+              />
+              <FormControl variant='standard' fullWidth required>
+                <InputLabel id='new-campaign-location'>Location</InputLabel>
+                <Select
+                  labelId='new-campaign-location-label-id'
+                  id='new-campaign-location-id'
+                  value={editingDetail.location}
+                  label='Location'
+                  onChange={(evt) => onEditDetail(evt, 'location')}
+                >
+                  <MenuItem value={'HK'}>HK</MenuItem>
+                  <MenuItem value={'UK'}>UK</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl variant='standard' fullWidth required>
+                <InputLabel id='new-campaign-classification'>Classification</InputLabel>
+                <Select
+                  labelId='new-campaign-classification-label-id'
+                  id='new-campaign-classification-id'
+                  value={editingDetail.classification}
+                  label='Classification'
+                  onChange={(evt) => onEditDetail(evt, 'classification')}
+                >
+                  <MenuItem value={'HSBC'}>HSBC</MenuItem>
+                  <MenuItem value={'Non-HSBC'}>Non-HSBC</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl variant='standard' fullWidth required>
+                <InputLabel id='new-campaign-messageType'>Message Type</InputLabel>
+                <Select
+                  labelId='new-campaign-messageType-label-id'
+                  id='new-campaign-messageType-id'
+                  value={editingDetail.messageType}
+                  label='Message Type'
+                  onChange={(evt) => onEditDetail(evt, 'messageType')}
+                >
+                  <MenuItem value={'MGM Banner'}>MGM Banner</MenuItem>
+                  <MenuItem value={'Email Banner'}>Email Banner</MenuItem>
+                  <MenuItem value={'PWS Banner'}>PWS Banner</MenuItem>
+                  <MenuItem value={'FB Banner'}>FB Banner</MenuItem>
+                  <MenuItem value={'Campaign Landing Page'}>
+                    Campaign Landing Page
+                  </MenuItem>
+                  <MenuItem value={'PWS'}>PWS</MenuItem>
+                  <MenuItem value={'Mobile In-app'}>Mobile In-app</MenuItem>
+                </Select>
+              </FormControl>
+              <Typography sx={{ pt: 2 }} variant='h4'>
+                Hash Tag
+              </Typography>
+              <Autocomplete
+                onChange={onEditTag}
+                multiple
+                id='tags-standard'
+                options={allTagList
+                  .slice()
+                  .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+                groupBy={(option) => option.tag_category}
+                value={campaignDetail.tags}
+                getOptionLabel={(option) => option.tag_name}
+                isOptionEqualToValue={(option, value) =>
+                  option.tag_name.toLowerCase() === value.tag_name.toLowerCase()
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant='standard'
+                    label='Update hash tag'
+                    placeholder='Hash tag'
+                  />
+                )}
+              />
+              <Typography sx={{ pt: 2, pb: 1 }} variant='h4'>
+                Image
+              </Typography>
+              <ImageList sx={{ width: '100%', height: 250 }} cols={3}>
+                {images.map((item, i) => (
+                  <ImageListItem key={i}>
+                    <img
+                      src={`data:image/jpeg;base64,${item.img}`}
+                      alt={item.image_name}
+                      loading='lazy'
+                    />
+                    <ImageListItemBar
+                      title={item.image_name}
+                      position='bottom'
+                      actionIcon={
+                        <IconButton
+                          sx={{ color: 'rgba(255, 255, 255, 1)' }}
+                          aria-label={`info about ${item.image_name}`}
+                          onClick={onDeleteImage}
+                        >
+                          <DeleteOutlineOutlinedIcon />
+                        </IconButton>
+                      }
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            </Stack>
+
             <Stack direction='row' sx={{ py: 1 }} spacing={1}>
               <LoadingButton
                 loading={loadingEl === 'EDIT'}
@@ -275,7 +347,7 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
           <Stack direction='column' justifyContent='space-between'>
             <Stack sx={{ mb: 2 }}>
               <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                <Typography variant='h4'>{campaignDetail.companyName}</Typography>
+                <Typography variant='h4'>{campaignDetail.company}</Typography>
                 <IconButton aria-label='close' color='primary' onClick={onClose}>
                   <CloseIcon />
                 </IconButton>
@@ -291,19 +363,24 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 <Grid item xs={2}>
                   <IconLabel
                     icon={<AccountBalanceOutlinedIcon fontSize='small' />}
-                    label={campaignDetail.classification}
+                    label={campaignDetail.hsbc_vs_non_hsbc}
                   />
                 </Grid>
                 <Grid item xs={2}>
                   <IconLabel
                     icon={<InfoOutlinedIcon fontSize='small' />}
-                    label={campaignDetail.messageType}
+                    label={campaignDetail.message_type}
                   />
                 </Grid>
                 <Grid item xs={6}>
                   <IconLabel
                     icon={<CalendarMonthOutlinedIcon fontSize='small' />}
-                    label={`Last Updated: August 17, 2022`}
+                    label={
+                      campaignDetail.creation_datetime &&
+                      new Date(campaignDetail.creation_datetime)
+                        .toISOString()
+                        .slice(0, 10)
+                    }
                   />
                 </Grid>
               </Grid>
@@ -312,46 +389,27 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
                 justifyContent='flex-start'
                 alignItems='items-center'
               >
-                {isTagLoading && (
-                  <Skeleton
-                    variant='rounded'
-                    width='100%'
-                    height={50}
-                    sx={{ borderRadius: 1 }}
+                {campaignDetail.tags?.map((t, i) => (
+                  <Chip
+                    key={i}
+                    label={`#${t.tag_name.toLowerCase()}`}
+                    size='small'
+                    sx={{ px: 0.5, mr: 0.5 }}
                   />
-                )}
-                {!isTagLoading &&
-                  tags.map((t, i) => (
-                    <Chip
-                      key={i}
-                      label={`#${t.tag_name.toLowerCase()}`}
-                      size='small'
-                      sx={{ px: 0.5, mr: 0.5 }}
-                    />
-                  ))}
+                ))}
               </Stack>
             </Stack>
 
             <ImageList sx={{ maxHeight: 900 }} cols={1}>
-              {isImageLoading && (
-                <Skeleton
-                  variant='rounded'
-                  width='100%'
-                  height={400}
-                  sx={{ borderRadius: 1 }}
-                />
-              )}
-
-              {!isImageLoading &&
-                images?.map((image, i) => (
-                  <ImageListItem key={i}>
-                    <img
-                      src={`data:image/jpeg;base64,${image.img}`}
-                      alt={image.image_name}
-                      loading='lazy'
-                    />
-                  </ImageListItem>
-                ))}
+              {campaignDetail.images?.map((image, i) => (
+                <ImageListItem key={i}>
+                  <img
+                    src={`data:image/jpeg;base64,${image.img}`}
+                    alt={image.image_name}
+                    loading='lazy'
+                  />
+                </ImageListItem>
+              ))}
             </ImageList>
 
             <Stack direction='row'>
