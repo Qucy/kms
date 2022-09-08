@@ -28,7 +28,7 @@ import { IconLabel } from '../../components/common';
 import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
 import { LoadingButton } from '@mui/lab';
 
-function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
+function CampaignManageDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [loadingEl, setLoadingEl] = React.useState(false);
 
@@ -245,129 +245,129 @@ function CampaignDetail({ campaignDetail, open, onClose, fetchCampaigns }) {
             </Stack>
           </Stack>
         ) : (
-          <Stack direction='column' justifyContent='space-between'>
-            <Stack sx={{ mb: 2 }}>
-              <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                <Typography variant='h4'>{campaignDetail.companyName}</Typography>
-                <IconButton aria-label='close' color='primary' onClick={onClose}>
-                  <CloseIcon />
-                </IconButton>
+            <Stack direction='column' justifyContent='space-between'>
+              <Stack sx={{ mb: 2 }}>
+                <Stack direction='row' justifyContent='space-between' alignItems='center'>
+                  <Typography variant='h4'>{campaignDetail.companyName}</Typography>
+                  <IconButton aria-label='close' color='primary' onClick={onClose}>
+                    <CloseIcon />
+                  </IconButton>
+                </Stack>
+
+                <Grid container sx={{ py: 1 }}>
+                  <Grid item xs={2}>
+                    <IconLabel
+                      icon={<PlaceOutlinedIcon fontSize='small' />}
+                      label={campaignDetail.location}
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <IconLabel
+                      icon={<AccountBalanceOutlinedIcon fontSize='small' />}
+                      label={campaignDetail.classification}
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <IconLabel
+                      icon={<InfoOutlinedIcon fontSize='small' />}
+                      label={campaignDetail.messageType}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <IconLabel
+                      icon={<CalendarMonthOutlinedIcon fontSize='small' />}
+                      label={`Last Updated: August 17, 2022`}
+                    />
+                  </Grid>
+                </Grid>
+                <Stack
+                  direction='row'
+                  justifyContent='flex-start'
+                  alignItems='items-center'
+                >
+                  {isTagLoading && (
+                    <Skeleton
+                      variant='rounded'
+                      width='100%'
+                      height={50}
+                      sx={{ borderRadius: 1 }}
+                    />
+                  )}
+                  {!isTagLoading &&
+                    tags.map((t, i) => (
+                      <Chip
+                        key={i}
+                        label={`#${t.tag_name.toLowerCase()}`}
+                        size='small'
+                        sx={{ px: 0.5, mr: 0.5 }}
+                      />
+                    ))}
+                </Stack>
               </Stack>
 
-              <Grid container sx={{ py: 1 }}>
-                <Grid item xs={2}>
-                  <IconLabel
-                    icon={<PlaceOutlinedIcon fontSize='small' />}
-                    label={campaignDetail.location}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <IconLabel
-                    icon={<AccountBalanceOutlinedIcon fontSize='small' />}
-                    label={campaignDetail.classification}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <IconLabel
-                    icon={<InfoOutlinedIcon fontSize='small' />}
-                    label={campaignDetail.messageType}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <IconLabel
-                    icon={<CalendarMonthOutlinedIcon fontSize='small' />}
-                    label={`Last Updated: August 17, 2022`}
-                  />
-                </Grid>
-              </Grid>
-              <Stack
-                direction='row'
-                justifyContent='flex-start'
-                alignItems='items-center'
-              >
-                {isTagLoading && (
+              <ImageList sx={{ maxHeight: 900 }} cols={1}>
+                {isImageLoading && (
                   <Skeleton
                     variant='rounded'
                     width='100%'
-                    height={50}
+                    height={400}
                     sx={{ borderRadius: 1 }}
                   />
                 )}
-                {!isTagLoading &&
-                  tags.map((t, i) => (
-                    <Chip
-                      key={i}
-                      label={`#${t.tag_name.toLowerCase()}`}
-                      size='small'
-                      sx={{ px: 0.5, mr: 0.5 }}
-                    />
+
+                {!isImageLoading &&
+                  images ?.map((image, i) => (
+                    <ImageListItem key={i}>
+                      <img
+                        src={`data:image/jpeg;base64,${image.img}`}
+                        alt={image.image_name}
+                        loading='lazy'
+                      />
+                    </ImageListItem>
                   ))}
+              </ImageList>
+
+              <Stack direction='row'>
+                <Button onClick={() => setIsEditing(true)}>Edit</Button>
+                <Button onClick={onDelete}>Delete</Button>
               </Stack>
-            </Stack>
-
-            <ImageList sx={{ maxHeight: 900 }} cols={1}>
-              {isImageLoading && (
-                <Skeleton
-                  variant='rounded'
-                  width='100%'
-                  height={400}
-                  sx={{ borderRadius: 1 }}
-                />
-              )}
-
-              {!isImageLoading &&
-                images?.map((image, i) => (
-                  <ImageListItem key={i}>
-                    <img
-                      src={`data:image/jpeg;base64,${image.img}`}
-                      alt={image.image_name}
-                      loading='lazy'
-                    />
-                  </ImageListItem>
-                ))}
-            </ImageList>
-
-            <Stack direction='row'>
-              <Button onClick={() => setIsEditing(true)}>Edit</Button>
-              <Button onClick={onDelete}>Delete</Button>
-            </Stack>
-            <Popover
-              open={Boolean(popoverEl)}
-              anchorEl={popoverEl}
-              onClose={() => setPopoverEl(null)}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-            >
-              <Stack sx={{ p: 2 }} direction='row' alignItems='center'>
-                <Typography variant='body1' sx={{ mr: 2 }}>
-                  Deletion of tag cannot be redo. Click "Confirm" to proceed.
+              <Popover
+                open={Boolean(popoverEl)}
+                anchorEl={popoverEl}
+                onClose={() => setPopoverEl(null)}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+              >
+                <Stack sx={{ p: 2 }} direction='row' alignItems='center'>
+                  <Typography variant='body1' sx={{ mr: 2 }}>
+                    Deletion of tag cannot be redo. Click "Confirm" to proceed.
                 </Typography>
-                <Stack direction='row' spacing={1} size='small'>
-                  <LoadingButton
-                    loading={loadingEl === 'DELETE'}
-                    variant='contained'
-                    size='small'
-                    onClick={onDeleteConfirm}
-                  >
-                    Confirm
+                  <Stack direction='row' spacing={1} size='small'>
+                    <LoadingButton
+                      loading={loadingEl === 'DELETE'}
+                      variant='contained'
+                      size='small'
+                      onClick={onDeleteConfirm}
+                    >
+                      Confirm
                   </LoadingButton>
-                  <Button
-                    variant='contained'
-                    size='small'
-                    onClick={() => setPopoverEl(null)}
-                  >
-                    Cancel
+                    <Button
+                      variant='contained'
+                      size='small'
+                      onClick={() => setPopoverEl(null)}
+                    >
+                      Cancel
                   </Button>
+                  </Stack>
                 </Stack>
-              </Stack>
-            </Popover>
-          </Stack>
-        )}
+              </Popover>
+            </Stack>
+          )}
       </Box>
     </Drawer>
   );
 }
 
-export default CampaignDetail;
+export default CampaignManageDetail;
