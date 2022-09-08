@@ -90,6 +90,7 @@ export default function NewCampaign({
         message_type: newCampaign.messageType,
         //thumbnail
         file: uploadedImages[0],
+        create_by: 'Jason',
       };
 
       try {
@@ -243,8 +244,8 @@ export default function NewCampaign({
               onChange={(evt) => onNewCampaignChange(evt, 'location')}
               label='Location'
             >
-              <MenuItem value={'Hong Kong'}>Hong Kong</MenuItem>
-              <MenuItem value={'Global'}>Global</MenuItem>
+              <MenuItem value={'HK'}>Hong Kong</MenuItem>
+              <MenuItem value={'UK'}>United Kingdom</MenuItem>
             </Select>
           </FormControl>
           <FormControl variant='standard' fullWidth required>
