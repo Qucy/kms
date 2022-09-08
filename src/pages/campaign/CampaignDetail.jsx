@@ -28,11 +28,16 @@ import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlin
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
+import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 
 import { API_IMAGE, API_CAMPAIGNTAGLINK, API_CAMPAIGN } from '../../utils/api';
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 import { IconLabel } from '../../components/common';
-import { asyncFuncHandlerWithParameter } from '../../utils/handler';
+import {
+  asyncFuncHandlerWithParameter,
+  asyncFuncHandlerWithTwoParam,
+} from '../../utils/handler';
 import {
   campaignSliceSelector,
   setCampaignDetail,
@@ -40,93 +45,76 @@ import {
   setCampaignDetailTags,
 } from '../../hooks/campaign/campaignSlice';
 
-function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
+function CampaignDetail({ campaignId, open, onClose, fetchCampaigns, clearCampaignId }) {
+  const dispatch = useDispatch();
   const allTagList = useSelector(tagSliceSelector.allTagList);
   const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
 
-  const dispatch = useDispatch();
+  const [editingDetail, setEditingDetail] = React.useState(campaignDetail);
+  const [addedImages, setAddedImages] = React.useState([]);
+  const [deletedImages, setDeletedImages] = React.useState([]);
 
   const [isEditing, setIsEditing] = React.useState(false);
-  const [loadingEl, setLoadingEl] = React.useState(false);
-
-  const [images, setImages] = React.useState([]);
-  const [tags, setTags] = React.useState([]);
-
-  const [status, setStatus] = React.useState('IDLE'); // LOADING, SUCCESS, ERROR, IDLE
-
-  const [editingDetail, setEditingDetail] = React.useState(campaignDetail);
+  const [status, setStatus] = React.useState('IDLE'); // LOADING, SUCCESS, ERROR, IDLE, EDIT, DELETE
 
   const [popoverEl, setPopoverEl] = React.useState(null);
 
   const toggleEditingState = () => setIsEditing((_prevState) => !_prevState);
 
   const onCancel = () => {
-    //TODO: replace the following logic with Reference
     setEditingDetail(Object.assign({}, campaignDetail));
-
     toggleEditingState();
   };
 
   const onSave = async () => {
-    setLoadingEl('EDIT');
+    setStatus('EDIT');
 
     const payload = {
-      id: editingDetail.campaignId,
-      company: editingDetail.companyName,
-      hsbc_vs_non_hsbc: editingDetail.classification,
-      location: editingDetail.location,
-      message_type: editingDetail.messageType,
-      response_rate: editingDetail.responseRate ? editingDetail.responseRate : null,
-      tag_names: tags.map((t) => t.tag_name).join(','),
+      tag_names: editingDetail.tags.map((t) => t.tag_name).join(','),
+      ...editingDetail,
     };
 
-    const editCampaign = async () => {
-      try {
-        const response = await API_CAMPAIGN.editCampaign(
-          editingDetail.campaignId,
-          payload
-        );
+    const [detailRes, detailErr] = await asyncFuncHandlerWithTwoParam(
+      API_CAMPAIGN.editCampaign,
+      editingDetail.id,
+      payload
+    );
 
-        return response.status;
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    const resStatus = await editCampaign();
-
-    if (resStatus === 200) {
-      setLoadingEl('');
+    if (detailRes.status === 200) {
+      setStatus('SUCCESS');
       setTimeout(() => setIsEditing(false), 500);
       setTimeout(onClose, 1000);
       setTimeout(fetchCampaigns, 2000);
     }
+
+    if (detailErr) {
+      console.error(detailErr);
+    }
   };
 
   const onDelete = (e) => {
-    //open confirmation dialog
     setPopoverEl(e.currentTarget);
   };
 
   const onDeleteConfirm = async () => {
-    setLoadingEl('DELETE');
+    setStatus('DELETE');
 
-    const deleteCampaign = async () => {
-      try {
-        const response = await API_CAMPAIGN.deleteCampaign(campaignDetail.campaignId);
-        return response.status;
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    const resStatus = await deleteCampaign();
+    const [response, error] = await asyncFuncHandlerWithParameter(
+      API_CAMPAIGN.deleteCampaign,
+      campaignDetail.id
+    );
 
-    if (resStatus === 204) {
-      setLoadingEl('');
+    if (response.status === 204) {
+      setStatus('LOADING');
+      clearCampaignId();
       setTimeout(() => setPopoverEl(null), 500);
       setTimeout(() => setIsEditing(false), 1000);
       setTimeout(onClose, 1500);
       setTimeout(fetchCampaigns, 2000);
+    }
+
+    if (error) {
+      console.error(error);
     }
   };
 
@@ -150,33 +138,32 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
     });
   };
 
-  const onEditImage = (e, i) => {
-    setEditingDetail((_prevState) => {
-      _prevState.images.splice(i, 1);
+  const onDeleteImage = (e, i) => {
+    let _editingDetail = { ...editingDetail };
+    const { images } = _editingDetail;
 
-      return {
-        ..._prevState,
-      };
-    });
+    let _images = [...images];
+    setDeletedImages((_prevState) => [_images[i], ..._prevState]);
+
+    _editingDetail.images = _images.filter((image, id) => id !== i);
+    setEditingDetail(_editingDetail);
   };
 
-  const onDeleteImage = (e, i) => {
-    setEditingDetail((_prevState) => {
-      const { images } = _prevState;
-      let _prev = { ..._prevState };
-      let _images = [...images];
+  const onAddImage = (e) => {
+    const { files } = e.target;
 
-      _images.splice(i, 1);
-      _prev.images = _images;
-      return _prev;
-    });
+    if (!files || files.length === 0) {
+      return;
+    } else {
+      setAddedImages((_prevState) => [...files, ..._prevState]);
+    }
   };
 
   React.useEffect(() => {
     setStatus('LOADING');
 
     const fetchData = async (id) => {
-      if (!id) return 'IDLE';
+      if (!id) return;
 
       const [detailRes, detailErr] = await asyncFuncHandlerWithParameter(
         API_CAMPAIGN.getCampaignDetail,
@@ -219,7 +206,7 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
     [campaignDetail]
   );
 
-  // React.useEffect(() => console.log(editingDetail), [editingDetail]);
+  React.useEffect(() => console.log(editingDetail), [editingDetail]);
 
   if (status === 'LOADING')
     return (
@@ -321,12 +308,23 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                   />
                 )}
               />
-              <Typography sx={{ pt: 2, pb: 1 }} variant='h4'>
-                Image
-              </Typography>
-              <ImageList sx={{ width: '100%', height: 250 }} cols={3}>
+              <Stack direction='row' justifyContent='space-between' sx={{ pt: 2, pb: 1 }}>
+                <Typography variant='h4'>Image</Typography>
+                <Button
+                  variant='outlined'
+                  component='label'
+                  startIcon={<AddOutlinedIcon />}
+                  onChange={onAddImage}
+                >
+                  Include New Image
+                  <input hidden accept='image/*' multiple type='file' />
+                </Button>
+              </Stack>
+
+              <ImageList sx={{ width: '100%', height: 180 }} cols={4}>
                 {editingDetail.images?.map((item, i) => (
                   <ImageListItem key={i}>
+                    8
                     <img
                       src={`data:image/jpeg;base64,${item.img}`}
                       alt={item.image_name}
@@ -339,7 +337,7 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                         <IconButton
                           sx={{ color: 'rgba(255, 255, 255, 1)' }}
                           aria-label={`info about ${item.image_name}`}
-                          onClick={onDeleteImage}
+                          onClick={(e) => onDeleteImage(e, i)}
                         >
                           <DeleteOutlineOutlinedIcon />
                         </IconButton>
@@ -348,11 +346,45 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                   </ImageListItem>
                 ))}
               </ImageList>
+              <ImageList sx={{ width: '100%', height: 180 }} cols={4}>
+                {addedImages
+                  ?.map((file) => {
+                    return {
+                      name: file.name,
+                      source: URL.createObjectURL(file),
+                    };
+                  })
+                  .map((image, i) => (
+                    <ImageListItem key={i}>
+                      <img
+                        key={i}
+                        src={image.source}
+                        width='300'
+                        height='300'
+                        alt='new uploaded'
+                        loading='lazy'
+                      />
+                      <ImageListItemBar
+                        title={image.name}
+                        subtitle='Upload success!'
+                        position='bottom'
+                        actionIcon={
+                          <IconButton
+                            sx={{ color: 'rgba(255, 255, 255, 1)' }}
+                            aria-label={`info about ${image.name}`}
+                          >
+                            <CheckOutlinedIcon />
+                          </IconButton>
+                        }
+                      />
+                    </ImageListItem>
+                  ))}
+              </ImageList>
             </Stack>
 
             <Stack direction='row' sx={{ py: 1 }} spacing={1}>
               <LoadingButton
-                loading={loadingEl === 'EDIT'}
+                loading={status === 'EDIT'}
                 variant='contained'
                 size='small'
                 onClick={onSave}
@@ -456,7 +488,7 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns }) {
                 </Typography>
                 <Stack direction='row' spacing={1} size='small'>
                   <LoadingButton
-                    loading={loadingEl === 'DELETE'}
+                    loading={status === 'DELETE'}
                     variant='contained'
                     size='small'
                     onClick={onDeleteConfirm}

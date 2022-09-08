@@ -38,7 +38,6 @@ import NewCampaign from './NewCampaign';
 
 export default function Campaign() {
   const allTagList = useSelector(tagSliceSelector.allTagList);
-  const campaignDetail = useSelector(campaignSliceSelector.campaignDetail);
   const campaignList = useSelector(campaignSliceSelector.campaignList);
   const filter = useSelector(campaignSliceSelector.filter);
   const status = useSelector(campaignSliceSelector.status);
@@ -156,6 +155,8 @@ export default function Campaign() {
     toggleDrawerOpen();
     dispatch(setCampaignDetail({}));
   }, []);
+
+  const clearCampaignId = React.useCallback(() => setCampaignId(null), []);
 
   React.useEffect(() => {
     fetchCampaigns();
@@ -353,6 +354,7 @@ export default function Campaign() {
         campaignId={campaignId}
         open={isDetailDrawerOpen}
         onClose={onDrawerClose}
+        clearCampaignId={clearCampaignId}
         fetchCampaigns={fetchCampaigns}
       />
       <NewCampaign
