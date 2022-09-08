@@ -74,11 +74,38 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns, clearCampai
       ...editingDetail,
     };
 
+    const deleteImages = async () => {
+      const response = Promise.all(
+        deletedImages.map((image) =>
+          asyncFuncHandlerWithParameter(API_IMAGE.deleteImage, image.id)
+        )
+      );
+      return response;
+    };
+
+    const addImages = async () => {
+      const response = Promise.all(
+        addedImages.map((image) => {
+          const imageObj = {
+            file: image,
+            image_name: image.name.split('.')[0],
+            campaign_id: editingDetail.id,
+            create_by: 'Jason',
+          };
+          return asyncFuncHandlerWithParameter(API_IMAGE.createImage, imageObj);
+        })
+      );
+      return response;
+    };
+
     const [detailRes, detailErr] = await asyncFuncHandlerWithTwoParam(
       API_CAMPAIGN.editCampaign,
       editingDetail.id,
       payload
     );
+
+    deletedImages.length > 0 && (await deleteImages());
+    addedImages.length > 0 && (await addImages());
 
     if (detailRes.status === 200) {
       setStatus('SUCCESS');
@@ -205,8 +232,6 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns, clearCampai
     () => setEditingDetail(Object.assign({}, campaignDetail)),
     [campaignDetail]
   );
-
-  React.useEffect(() => console.log(editingDetail), [editingDetail]);
 
   if (status === 'LOADING')
     return (
