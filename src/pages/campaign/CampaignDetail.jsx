@@ -63,6 +63,8 @@ function CampaignDetail({ campaignId, open, onClose, fetchCampaigns, clearCampai
 
   const onCancel = () => {
     setEditingDetail(Object.assign({}, campaignDetail));
+    setAddedImages([]);
+    setDeletedImages([]);
     toggleEditingState();
   };
 
