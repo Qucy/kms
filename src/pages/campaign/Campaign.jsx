@@ -154,7 +154,8 @@ export default function Campaign() {
   const onDrawerClose = React.useCallback(() => {
     toggleDrawerOpen();
     dispatch(setCampaignDetail({}));
-  }, []);
+    setCampaignId(null);
+  }, [campaignId]);
 
   const clearCampaignId = React.useCallback(() => setCampaignId(null), []);
 
