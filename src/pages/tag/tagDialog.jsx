@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@mui/material';
 
-import { API_IMAGETAGLINK, API_TAG } from '../../utils/api';
+import { API_CAMPAIGNTAGLINK, API_TAG } from '../../utils/api';
 import useTag from '../../hooks/tag/useTag';
 import useDebounce from '../../hooks/common/useDebounce';
 
@@ -38,12 +38,17 @@ export default function TagDialog(props) {
       const { original_tag_name: oldTagName } = resUpdateTag.data;
 
       if (resUpdateTag.status === 200) {
-        const resPatchTagName = await API_IMAGETAGLINK.updateTagNames({
+        // const resPatchTagName = await API_IMAGETAGLINK.updateTagNames({
+        //   tag_name: oldTagName,
+        //   new_tag_name: t.tag_name,
+        // });
+
+        const resUpdateCampaignTags = await API_CAMPAIGNTAGLINK.updateTagNames({
           tag_name: oldTagName,
           new_tag_name: t.tag_name,
         });
 
-        if (resPatchTagName.status === 200) {
+        if (resUpdateCampaignTags.status === 200) {
           dispatch(setButtonStatus('SUCCESS'));
           setTimeout(onTagDialogClose, 1000);
           callback && setTimeout(callback, 1000);

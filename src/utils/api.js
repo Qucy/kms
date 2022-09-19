@@ -233,6 +233,14 @@ export const API_CAMPAIGNTAGLINK = {
     };
     return fetchRequest(config);
   },
+  updateTagNames: async (payload) => {
+    const config = {
+      method: 'patch',
+      url: `campaign-tag-linkage/`,
+      data: payload,
+    };
+    return fetchRequest(config);
+  },
 };
 
 // ImageTagLink API
