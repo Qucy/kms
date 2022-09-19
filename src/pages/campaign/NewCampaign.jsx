@@ -20,7 +20,8 @@ import { PhotoCamera } from '@mui/icons-material';
 
 import { tagSliceSelector } from '../../hooks/tag/tagSlice';
 
-import { API_CAMPAIGN, API_CAMPAIGNTAGLINK, API_IMAGE } from '../../utils/api';
+import { API_CAMPAIGN, API_CAMPAIGNTAGLINK, API_IMAGE, API_TAG } from '../../utils/api';
+import { asyncFuncHandlerWithParameter } from '../../utils/handler';
 
 export default function NewCampaign({
   open,
@@ -40,12 +41,18 @@ export default function NewCampaign({
     messageType: '',
     responseRate: 0,
   });
-  const [selectedTags, setSelectedTags] = React.useState();
+  const [selectedTags, setSelectedTags] = React.useState([]);
 
   const [isSaveButtonLoading, setIsSaveButtonLoading] = React.useState(false);
 
-  const onSelectTags = (e, t) => {
-    setSelectedTags(t);
+  const onSelectTags = (evt, newValue) => {
+    if (typeof newValue[newValue.length - 1] === 'string') {
+      newValue[newValue.length - 1] = {
+        tag_name: evt.target.value,
+        tag_category: 'default',
+      };
+    }
+    setSelectedTags(newValue);
   };
 
   const onImagesUpload = (e) => {
@@ -81,6 +88,21 @@ export default function NewCampaign({
   }, [uploadedImages, newCampaign]);
 
   const onSaveNewCampaign = async () => {
+    const createTags = async () => {
+      let newTags = selectedTags.slice().filter((t) => !t.id);
+      const response = Promise.all(
+        newTags.map((tag) => {
+          const tagObject = {
+            create_by: 45072289,
+            creation_datetime: new Date(),
+            ...tag,
+          };
+          return asyncFuncHandlerWithParameter(API_TAG.createTag, tagObject);
+        })
+      );
+      return response;
+    };
+
     const createCampaign = async () => {
       const payload = {
         company: newCampaign.companyName,
@@ -88,7 +110,6 @@ export default function NewCampaign({
         location: newCampaign.location,
         response_rate: newCampaign.responseRate,
         message_type: newCampaign.messageType,
-        //thumbnail
         file: uploadedImages[0],
         create_by: 'Jason',
       };
@@ -151,11 +172,12 @@ export default function NewCampaign({
 
     setIsSaveButtonLoading(true);
 
+    const createTagsRes = await createTags();
     const campaignId = await createCampaign();
     const isCreateImagesSuccess = await createImages(campaignId);
     const isCreateCampaignTagLinkSuccess = await createCampaignTagLink(campaignId);
 
-    if (isCreateImagesSuccess && isCreateCampaignTagLinkSuccess) {
+    if (isCreateImagesSuccess && isCreateCampaignTagLinkSuccess && createTagsRes) {
       setIsSaveButtonLoading(false);
       setTimeout(() => onCancel(), 500);
       setTimeout(() => {
@@ -181,6 +203,8 @@ export default function NewCampaign({
     // free memory when ever this component is unmounted
     // return () => URL.revokeObjectURL(objectUrl) TODO
   }, [uploadedImages]);
+
+  React.useEffect(() => console.log(selectedTags), [selectedTags]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -300,14 +324,16 @@ export default function NewCampaign({
             </Typography>
           </Stack>
           <Autocomplete
+            value={selectedTags}
             multiple
-            onChange={onSelectTags}
             id='tags-standard'
             options={allTagList
               .slice()
               .sort((a, b) => a.tag_category.localeCompare(b.tag_category))}
+            onChange={onSelectTags}
             groupBy={(option) => option.tag_category}
             getOptionLabel={(option) => option.tag_name}
+            freeSolo
             renderInput={(params) => (
               <TextField {...params} variant='standard' label='Tags' placeholder='Tags' />
             )}
