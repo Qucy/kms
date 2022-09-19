@@ -71,7 +71,6 @@ export default function Menu(props) {
       <Divider />
       <List component='nav'>
         <React.Fragment>
-
           {/* campaign list */}
           <ListItemButton component={NavLink} to='/main/campaign'>
             <ListItemIcon sx={{ padding: 0 }}>
@@ -81,12 +80,12 @@ export default function Menu(props) {
           </ListItemButton>
 
           {/* campaign manage */}
-          <ListItemButton component={NavLink} to='/main/campaignmanage'>
+          {/* <ListItemButton component={NavLink} to='/main/campaignmanage'>
             <ListItemIcon sx={{ padding: 0 }}>
               <FolderSharedOutlinedIcon />
             </ListItemIcon>
             <ListItemText primary='Campaign Manage' />
-          </ListItemButton>
+          </ListItemButton> */}
 
           {/* image gallary */}
           <ListItemButton component={NavLink} to='/main/image'>

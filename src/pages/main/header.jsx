@@ -54,7 +54,8 @@ const Header = (props) => {
           noWrap
           sx={{ flexGrow: 1 }}
         >
-          CLCM Campaign Library
+          {/* Content &amp; Campaign Offer Repository  */}
+          Digital Messaging &amp; Offer Library
         </Typography>
       </Toolbar>
     </AppBar>
